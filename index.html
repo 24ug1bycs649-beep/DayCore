@@ -1,0 +1,825 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Life Manager & Challenge Tracker</title>
+    <style>
+      :root {
+        --bg: #0f172a;
+        --card: #1e293b;
+        --accent: #3b82f6;
+        --text: #f8fafc;
+        --text-muted: #94a3b8;
+        --success: #22c55e;
+        --border: #334155;
+        --danger: #ef4444;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family:
+          system-ui,
+          -apple-system,
+          sans-serif;
+      }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        padding: 1rem;
+        max-width: 1050px;
+        margin: 0 auto;
+      }
+
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+      }
+      h1 {
+        font-size: 1.5rem;
+      }
+      p.subtitle {
+        color: var(--text-muted);
+        font-size: 0.875rem;
+      }
+
+      .nav-tabs {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+      }
+      .tab-btn {
+        background: var(--card);
+        color: var(--text);
+        border: 1px solid var(--border);
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        cursor: pointer;
+      }
+      .tab-btn.active {
+        background: var(--accent);
+        border-color: var(--accent);
+      }
+
+      .tab-content {
+        display: none;
+      }
+      .tab-content.active {
+        display: block;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+      @media (min-width: 768px) {
+        .grid {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+
+      .card {
+        background: var(--card);
+        padding: 1.25rem;
+        border-radius: 0.75rem;
+        border: 1px solid var(--border);
+        margin-bottom: 1rem;
+      }
+      .card h2 {
+        font-size: 1.1rem;
+        margin-bottom: 1rem;
+        color: var(--accent);
+      }
+
+      /* Calendar */
+      .calendar-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+      }
+      .calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 0.25rem;
+        text-align: center;
+      }
+      .day-label {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        font-weight: bold;
+        padding: 0.25rem 0;
+      }
+      .day-cell {
+        padding: 0.5rem 0;
+        font-size: 0.875rem;
+        border-radius: 0.375rem;
+        cursor: pointer;
+        border: 1px solid transparent;
+      }
+      .day-cell:hover {
+        background: var(--border);
+      }
+      .day-cell.active {
+        border-color: var(--accent);
+        font-weight: bold;
+      }
+      .day-cell.today {
+        background: #1e3a8a;
+      }
+
+      /* Habits */
+      .habit-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.6rem 0;
+        border-bottom: 1px solid var(--border);
+      }
+      .habit-item label {
+        font-size: 0.95rem;
+        cursor: pointer;
+        flex-grow: 1;
+      }
+      .habit-item input[type="checkbox"] {
+        width: 1.2rem;
+        height: 1.2rem;
+        accent-color: var(--accent);
+        cursor: pointer;
+      }
+
+      /* Streaks & Challenges */
+      .streak-grid {
+        display: grid;
+        grid-template-columns: repeat(1, 1fr);
+        gap: 0.75rem;
+      }
+      .streak-box {
+        background: var(--bg);
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+        border: 1px solid var(--border);
+      }
+      .streak-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.25rem;
+      }
+      .streak-lbl {
+        font-size: 0.85rem;
+        font-weight: bold;
+      }
+      .streak-val {
+        font-size: 0.9rem;
+        font-weight: bold;
+        color: var(--success);
+      }
+      .progress-bar-bg {
+        background: var(--border);
+        height: 6px;
+        border-radius: 3px;
+        overflow: hidden;
+        margin-top: 0.4rem;
+      }
+      .progress-bar-fill {
+        background: var(--accent);
+        height: 100%;
+        width: 0%;
+        transition: width 0.3s ease;
+      }
+      .date-setter {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 0.4rem;
+        font-size: 0.75rem;
+        color: var(--text-muted);
+      }
+      .date-setter input {
+        background: var(--card);
+        border: 1px solid var(--border);
+        color: var(--text);
+        padding: 0.15rem 0.3rem;
+        border-radius: 0.25rem;
+        font-size: 0.75rem;
+      }
+
+      /* Forms & Inputs */
+      .input-group {
+        margin-top: 1rem;
+      }
+      .input-group label {
+        display: block;
+        font-size: 0.875rem;
+        color: var(--text-muted);
+        margin-bottom: 0.25rem;
+      }
+      input[type="text"],
+      input[type="number"],
+      textarea {
+        width: 100%;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        color: var(--text);
+        padding: 0.5rem;
+        border-radius: 0.375rem;
+        font-size: 0.9rem;
+      }
+      textarea {
+        resize: vertical;
+        min-height: 60px;
+      }
+
+      /* Expenses */
+      .expense-row {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+      }
+      .expense-list {
+        margin-top: 0.75rem;
+        max-height: 150px;
+        overflow-y: auto;
+      }
+      .expense-item {
+        display: flex;
+        justify-content: space-between;
+        background: var(--bg);
+        padding: 0.4rem 0.6rem;
+        border-radius: 0.25rem;
+        margin-bottom: 0.25rem;
+        font-size: 0.85rem;
+      }
+      .del-btn {
+        color: var(--danger);
+        cursor: pointer;
+        font-weight: bold;
+        margin-left: 0.5rem;
+      }
+
+      button.btn {
+        background: var(--accent);
+        border: none;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 0.375rem;
+        cursor: pointer;
+      }
+      button.nav-btn {
+        background: var(--border);
+        border: none;
+        color: var(--text);
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+        cursor: pointer;
+      }
+
+      /* Stats Grid */
+      .stats-summary-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+      }
+      .stat-card {
+        background: var(--bg);
+        border: 1px solid var(--border);
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+        text-align: center;
+      }
+      .stat-card-val {
+        font-size: 1.1rem;
+        font-weight: bold;
+        color: var(--accent);
+      }
+      .stat-card-lbl {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1rem;
+      }
+      th,
+      td {
+        border: 1px solid var(--border);
+        padding: 0.5rem;
+        text-align: left;
+        font-size: 0.85rem;
+      }
+      th {
+        background: var(--bg);
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div>
+        <h1>Life Manager & Challenge Tracker</h1>
+        <p class="subtitle" id="selected-date-display">Logging for: Today</p>
+      </div>
+      <div class="nav-tabs">
+        <button class="tab-btn active" onclick="switchTab('daily')">
+          Daily Log
+        </button>
+        <button class="tab-btn" onclick="switchTab('analytics')">
+          Managerial Overview
+        </button>
+      </div>
+    </header>
+
+    <!-- DAILY LOG TAB -->
+    <div id="tab-daily" class="tab-content active">
+      <div class="grid">
+        <div>
+          <div class="card">
+            <div class="calendar-header">
+              <button class="nav-btn" onclick="changeMonth(-1)">❮</button>
+              <strong id="month-year"></strong>
+              <button class="nav-btn" onclick="changeMonth(1)">❯</button>
+            </div>
+            <div class="calendar-grid" id="calendar"></div>
+          </div>
+
+          <div class="card">
+            <h2>Ongoing Challenges & Streaks</h2>
+            <div class="streak-grid" id="streakContainer"></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="card">
+            <h2>Habits & Daily Reflection</h2>
+            <div class="habit-item">
+              <label for="nofap">No Fap</label
+              ><input type="checkbox" id="nofap" onchange="saveData()" />
+            </div>
+            <div class="habit-item">
+              <label for="nosmoke">No Smoking</label
+              ><input type="checkbox" id="nosmoke" onchange="saveData()" />
+            </div>
+            <div class="habit-item">
+              <label for="nodrink">No Drinking</label
+              ><input type="checkbox" id="nodrink" onchange="saveData()" />
+            </div>
+            <div class="habit-item">
+              <label for="dsa">DSA (100 Mins)</label
+              ><input type="checkbox" id="dsa" onchange="saveData()" />
+            </div>
+            <div class="habit-item">
+              <label for="posting">LinkedIn & X Posting</label
+              ><input type="checkbox" id="posting" onchange="saveData()" />
+            </div>
+            <div class="habit-item">
+              <label for="workout">Push-ups / Workout</label
+              ><input type="checkbox" id="workout" onchange="saveData()" />
+            </div>
+
+            <div class="input-group">
+              <label for="foodEaten">Food Eaten Today</label>
+              <textarea
+                id="foodEaten"
+                placeholder="e.g., Oatmeal, Rice & Curry, Chole Bhature"
+                oninput="saveData()"
+              ></textarea>
+            </div>
+
+            <div class="input-group">
+              <label for="junkMeals">Junk Meals Consumed Count</label>
+              <input
+                type="number"
+                id="junkMeals"
+                min="0"
+                value="0"
+                onchange="saveData()"
+              />
+            </div>
+
+            <div class="input-group">
+              <label for="pros">What Went Well (Pros)</label>
+              <textarea
+                id="pros"
+                placeholder="Accomplishments, good focus..."
+                oninput="saveData()"
+              ></textarea>
+            </div>
+
+            <div class="input-group">
+              <label for="cons">What Went Bad (Cons)</label>
+              <textarea
+                id="cons"
+                placeholder="Distractions, missed goals..."
+                oninput="saveData()"
+              ></textarea>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2>Daily Expenses Log (₹)</h2>
+            <div class="expense-row">
+              <input
+                type="text"
+                id="expDesc"
+                placeholder="Item description (e.g. Snacks, Coffee)"
+              />
+              <input
+                type="number"
+                id="expAmount"
+                placeholder="Amount (₹)"
+                style="width: 110px"
+              />
+              <button class="btn" onclick="addExpense()">Add</button>
+            </div>
+            <div class="expense-list" id="expenseList"></div>
+            <p style="margin-top: 0.5rem; font-weight: bold; text-align: right">
+              Daily Total: ₹<span id="dailyTotalExp">0</span>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MANAGERIAL OVERVIEW TAB -->
+    <div id="tab-analytics" class="tab-content">
+      <div class="card">
+        <h2>Managerial Expenditure & Progress Overview</h2>
+        <button class="btn" style="margin-bottom: 1rem" onclick="exportData()">
+          Export Data (JSON Backup)
+        </button>
+
+        <div class="stats-summary-grid">
+          <div class="stat-card">
+            <div class="stat-card-val" id="thisWeekSpent">₹0</div>
+            <div class="stat-card-lbl">This Week's Spend</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-val" id="thisMonthSpent">₹0</div>
+            <div class="stat-card-lbl">This Month's Spend</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-val" id="totalLifetimeSpent">₹0</div>
+            <div class="stat-card-lbl">All-Time Total Spend</div>
+          </div>
+        </div>
+
+        <div id="managerialStats"></div>
+
+        <table id="summaryTable">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>DSA / Post / Workout</th>
+              <th>Junk Meals</th>
+              <th>Spent (₹)</th>
+              <th>Pros Summary</th>
+            </tr>
+          </thead>
+          <tbody id="summaryTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <script>
+      const habitsConfig = [
+        { id: "nofap", name: "No Fap", target: 21 },
+        { id: "nosmoke", name: "No Smoking", target: 21 },
+        { id: "nodrink", name: "No Drinking", target: 21 },
+        { id: "dsa", name: "DSA (100 Mins)", target: 45 },
+        { id: "posting", name: "LinkedIn & X Post", target: 45 },
+        { id: "workout", name: "Workout / Push-ups", target: 45 },
+      ];
+
+      let currentDate = new Date();
+      let selectedDateStr = formatDate(new Date());
+
+      function formatDate(date) {
+        return date.toISOString().split("T")[0];
+      }
+
+      function switchTab(tab) {
+        document
+          .querySelectorAll(".tab-btn")
+          .forEach((b) => b.classList.remove("active"));
+        document
+          .querySelectorAll(".tab-content")
+          .forEach((c) => c.classList.remove("active"));
+
+        if (tab === "daily") {
+          document.querySelectorAll(".tab-btn")[0].classList.add("active");
+          document.getElementById("tab-daily").classList.add("active");
+        } else {
+          document.querySelectorAll(".tab-btn")[1].classList.add("active");
+          document.getElementById("tab-analytics").classList.add("active");
+          renderManagerialView();
+        }
+      }
+
+      function init() {
+        renderCalendar();
+        renderStreakBoxes();
+        loadData(selectedDateStr);
+        calculateAllStreaks();
+      }
+
+      function renderCalendar() {
+        const calendarEl = document.getElementById("calendar");
+        calendarEl.innerHTML = "";
+        const year = currentDate.getFullYear();
+        const month = currentDate.getMonth();
+
+        document.getElementById("month-year").innerText = new Date(
+          year,
+          month,
+        ).toLocaleDateString("en-US", { month: "long", year: "numeric" });
+
+        ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].forEach((l) => {
+          const div = document.createElement("div");
+          div.className = "day-label";
+          div.innerText = l;
+          calendarEl.appendChild(div);
+        });
+
+        const firstDay = new Date(year, month, 1).getDay();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+        for (let i = 0; i < firstDay; i++)
+          calendarEl.appendChild(document.createElement("div"));
+
+        const todayStr = formatDate(new Date());
+
+        for (let day = 1; day <= daysInMonth; day++) {
+          const dateStr = formatDate(new Date(year, month, day));
+          const cell = document.createElement("div");
+          cell.className = "day-cell";
+          cell.innerText = day;
+
+          if (dateStr === todayStr) cell.classList.add("today");
+          if (dateStr === selectedDateStr) cell.classList.add("active");
+
+          cell.onclick = () => {
+            selectedDateStr = dateStr;
+            renderCalendar();
+            loadData(selectedDateStr);
+          };
+          calendarEl.appendChild(cell);
+        }
+      }
+
+      function changeMonth(delta) {
+        currentDate.setMonth(currentDate.getMonth() + delta);
+        renderCalendar();
+      }
+
+      function renderStreakBoxes() {
+        const container = document.getElementById("streakContainer");
+        container.innerHTML = "";
+
+        habitsConfig.forEach((h) => {
+          const startDate =
+            localStorage.getItem(`startdate_${h.id}`) || formatDate(new Date());
+          const box = document.createElement("div");
+          box.className = "streak-box";
+          box.innerHTML = `
+          <div class="streak-header">
+            <span class="streak-lbl">${h.name} (${h.target}-Day Challenge)</span>
+            <span class="streak-val" id="streak-val-${h.id}">0/${h.target}</span>
+          </div>
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill" id="progress-${h.id}"></div>
+          </div>
+          <div class="date-setter">
+            <span>Start Date:</span>
+            <input type="date" value="${startDate}" onchange="updateStartDate('${h.id}', this.value)">
+          </div>
+        `;
+          container.appendChild(box);
+        });
+      }
+
+      function updateStartDate(habitId, newDate) {
+        localStorage.setItem(`startdate_${habitId}`, newDate);
+        calculateAllStreaks();
+      }
+
+      function getStorageData(dateStr) {
+        const saved = localStorage.getItem(`tracker_${dateStr}`);
+        return saved
+          ? JSON.parse(saved)
+          : {
+              habits: {},
+              foodEaten: "",
+              junkMeals: 0,
+              pros: "",
+              cons: "",
+              expenses: [],
+            };
+      }
+
+      function saveData() {
+        const data = getStorageData(selectedDateStr);
+        habitsConfig.forEach(
+          (h) => (data.habits[h.id] = document.getElementById(h.id).checked),
+        );
+        data.foodEaten = document.getElementById("foodEaten").value;
+        data.junkMeals = document.getElementById("junkMeals").value;
+        data.pros = document.getElementById("pros").value;
+        data.cons = document.getElementById("cons").value;
+
+        localStorage.setItem(
+          `tracker_${selectedDateStr}`,
+          JSON.stringify(data),
+        );
+        calculateAllStreaks();
+      }
+
+      function loadData(dateStr) {
+        document.getElementById("selected-date-display").innerText =
+          `Logging for: ${dateStr}`;
+        const data = getStorageData(dateStr);
+
+        habitsConfig.forEach((h) => {
+          const el = document.getElementById(h.id);
+          if (el) el.checked = !!data.habits[h.id];
+        });
+
+        document.getElementById("foodEaten").value = data.foodEaten || "";
+        document.getElementById("junkMeals").value = data.junkMeals || 0;
+        document.getElementById("pros").value = data.pros || "";
+        document.getElementById("cons").value = data.cons || "";
+
+        renderExpenses(data.expenses || []);
+      }
+
+      function addExpense() {
+        const desc = document.getElementById("expDesc").value.trim();
+        const amt = parseFloat(document.getElementById("expAmount").value);
+        if (!desc || isNaN(amt)) return;
+
+        const data = getStorageData(selectedDateStr);
+        if (!data.expenses) data.expenses = [];
+        data.expenses.push({ desc, amt, id: Date.now() });
+
+        localStorage.setItem(
+          `tracker_${selectedDateStr}`,
+          JSON.stringify(data),
+        );
+        document.getElementById("expDesc").value = "";
+        document.getElementById("expAmount").value = "";
+        renderExpenses(data.expenses);
+      }
+
+      function deleteExpense(id) {
+        const data = getStorageData(selectedDateStr);
+        data.expenses = data.expenses.filter((e) => e.id !== id);
+        localStorage.setItem(
+          `tracker_${selectedDateStr}`,
+          JSON.stringify(data),
+        );
+        renderExpenses(data.expenses);
+      }
+
+      function renderExpenses(expenses) {
+        const list = document.getElementById("expenseList");
+        list.innerHTML = "";
+        let total = 0;
+
+        expenses.forEach((e) => {
+          total += e.amt;
+          const item = document.createElement("div");
+          item.className = "expense-item";
+          item.innerHTML = `<span>${e.desc}</span><span>₹${e.amt.toFixed(2)} <span class="del-btn" onclick="deleteExpense(${e.id})">✕</span></span>`;
+          list.appendChild(item);
+        });
+
+        document.getElementById("dailyTotalExp").innerText = total.toFixed(2);
+      }
+
+      function calculateAllStreaks() {
+        habitsConfig.forEach((h) => {
+          let streak = 0;
+          let checkDate = new Date();
+
+          while (true) {
+            const dateStr = formatDate(checkDate);
+            const saved = localStorage.getItem(`tracker_${dateStr}`);
+            if (!saved) break;
+
+            const data = JSON.parse(saved);
+            if (data.habits && data.habits[h.id]) {
+              streak++;
+              checkDate.setDate(checkDate.getDate() - 1);
+            } else {
+              break;
+            }
+          }
+
+          const valEl = document.getElementById(`streak-val-${h.id}`);
+          const progressEl = document.getElementById(`progress-${h.id}`);
+
+          if (valEl && progressEl) {
+            valEl.innerText = `${streak}/${h.target} Days (${Math.min(100, Math.round((streak / h.target) * 100))}%)`;
+            progressEl.style.width = `${Math.min(100, (streak / h.target) * 100)}%`;
+          }
+        });
+      }
+
+      function renderManagerialView() {
+        const tbody = document.getElementById("summaryTableBody");
+        tbody.innerHTML = "";
+
+        let totalLifetime = 0;
+        let thisMonthTotal = 0;
+        let thisWeekTotal = 0;
+        let totalJunk = 0;
+
+        const now = new Date();
+        const currentMonth = now.getMonth();
+        const currentYear = now.getFullYear();
+
+        // Get start of this week (Sunday)
+        const startOfWeek = new Date(now);
+        startOfWeek.setDate(now.getDate() - now.getDay());
+        startOfWeek.setHours(0, 0, 0, 0);
+
+        Object.keys(localStorage)
+          .filter((k) => k.startsWith("tracker_"))
+          .sort()
+          .reverse()
+          .forEach((key) => {
+            const dateStr = key.replace("tracker_", "");
+            const entryDate = new Date(dateStr);
+            const data = JSON.parse(localStorage.getItem(key));
+
+            const daySpent = (data.expenses || []).reduce(
+              (acc, e) => acc + e.amt,
+              0,
+            );
+            totalLifetime += daySpent;
+            totalJunk += parseInt(data.junkMeals || 0);
+
+            // Monthly check
+            if (
+              entryDate.getMonth() === currentMonth &&
+              entryDate.getFullYear() === currentYear
+            ) {
+              thisMonthTotal += daySpent;
+            }
+
+            // Weekly check
+            if (entryDate >= startOfWeek) {
+              thisWeekTotal += daySpent;
+            }
+
+            const row = document.createElement("tr");
+            row.innerHTML = `
+          <td>${dateStr}</td>
+          <td>DSA: ${data.habits?.dsa ? "✓" : "✗"} | Post: ${data.habits?.posting ? "✓" : "✗"} | Work: ${data.habits?.workout ? "✓" : "✗"}</td>
+          <td>${data.junkMeals || 0}</td>
+          <td>₹${daySpent.toFixed(2)}</td>
+          <td>${data.pros || "-"}</td>
+        `;
+            tbody.appendChild(row);
+          });
+
+        document.getElementById("thisWeekSpent").innerText =
+          `₹${thisWeekTotal.toFixed(2)}`;
+        document.getElementById("thisMonthSpent").innerText =
+          `₹${thisMonthTotal.toFixed(2)}`;
+        document.getElementById("totalLifetimeSpent").innerText =
+          `₹${totalLifetime.toFixed(2)}`;
+
+        document.getElementById("managerialStats").innerHTML = `
+        <p style="margin-bottom: 1rem; font-size: 0.9rem; color: var(--text-muted);"><strong>Total Junk Meals Recorded:</strong> ${totalJunk}</p>
+      `;
+      }
+
+      function exportData() {
+        const dataStr =
+          "data:text/json;charset=utf-8," +
+          encodeURIComponent(JSON.stringify(localStorage));
+        const downloadAnchor = document.createElement("a");
+        downloadAnchor.setAttribute("href", dataStr);
+        downloadAnchor.setAttribute(
+          "download",
+          `life_tracker_backup_${formatDate(new Date())}.json`,
+        );
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+      }
+
+      init();
+    </script>
+  </body>
+</html>
