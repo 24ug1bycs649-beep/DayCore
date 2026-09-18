@@ -392,6 +392,18 @@
   <!-- MAIN APP CONTAINER -->
   <div class="app-container" id="main-app" style="display: none;">
 
+  <script>
+    // Runs immediately as soon as both screens exist in the DOM — not on window.onload,
+    // which waits for every font/script/image to finish loading and caused a visible
+    // flash of the splash screen before switching to the main app on repeat visits.
+    (function () {
+      if (localStorage.getItem('daycore_onboarded')) {
+        document.getElementById('onboarding-screen').style.display = 'none';
+        document.getElementById('main-app').style.display = 'block';
+      }
+    })();
+  </script>
+
     <!-- TOP HEADER -->
     <header class="main-header">
       <div>
