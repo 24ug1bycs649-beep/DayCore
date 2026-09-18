@@ -1,7 +1,7 @@
 // DayCore Service Worker
 // Bump this version string whenever index.html/app files change,
 // so returning users get the fresh version instead of a stale cache.
-const CACHE_VERSION = 'daycore-v1';
+const CACHE_VERSION = 'daycore-v2';
 
 const APP_SHELL = [
   './',
@@ -14,7 +14,7 @@ const APP_SHELL = [
 
 // Third-party assets (Font Awesome, Chart.js) — cached as they're used so the
 // app keeps working offline after the first successful visit.
-const RUNTIME_CACHE = 'daycore-runtime-v1';
+const RUNTIME_CACHE = 'daycore-runtime-v2';
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
