@@ -1,86 +1,79 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="pink" data-mode="light">
   <head>
     <meta charset="UTF-8" />
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
     />
-    <title>DayCore — Daily Command Center</title>
-    <!-- Chart.js for Visual Analytics -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- FontAwesome for Icons -->
+    <title>DayCore — Daily Life Manager</title>
+
+    <!-- PWA Manifest & iOS Support -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="DayCore" />
+
+    <!-- Font Awesome Icons -->
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
+
     <style>
+      /* CSS THEME ENGINE */
       :root {
-        /* Soft Theme Variables Defaults (Soft Beige / Skin Accent) */
-        --bg-primary: #faf7f2;
-        --bg-surface: #ffffff;
-        --bg-card: #f5efe6;
-        --text-main: #2d2b2a;
-        --text-muted: #7d7873;
-        --border-color: #e8e0d5;
-
-        --accent-color: #2d5a27; /* Emerald Deep Green */
-        --accent-light: #e8f0e6;
-        --accent-hover: #23471f;
-
-        --danger-color: #e56b6b;
-        --danger-light: #fde8e8;
-        --success-color: #4caf50;
-        --warning-color: #ffb74d;
-
-        --radius-sm: 8px;
-        --radius-md: 16px;
-        --radius-lg: 24px;
-        --radius-full: 9999px;
-
-        --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.04);
-        --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        --bg-primary: #fff8f6;
+        --bg-card: #ffffff;
+        --bg-secondary: #fef1ed;
+        --text-main: #2d3748;
+        --text-muted: #718096;
+        --accent: #e56b6f;
+        --accent-light: #fbc4ab;
+        --accent-dark: #b5494d;
+        --border-color: #f0d0c7;
+        --success: #38b000;
+        --danger: #e63946;
+        --warning: #ffb703;
+        --shadow: 0 4px 20px rgba(229, 107, 111, 0.08);
+        --radius: 18px;
+        --nav-height: 65px;
       }
 
-      /* Color Theme Overrides */
-      [data-color-theme="pink"] {
-        --bg-primary: #fff8f9;
-        --bg-card: #fff0f3;
-        --accent-color: #d81b60;
-        --accent-light: #fce4ec;
-        --border-color: #f8bbd0;
-      }
-      [data-color-theme="green"] {
-        --bg-primary: #f4f8f5;
-        --bg-card: #e8f0eb;
-        --accent-color: #2e7d32;
-        --accent-light: #e8f5e9;
-        --border-color: #c8e6c9;
-      }
-      [data-color-theme="blue"] {
-        --bg-primary: #f4f8fb;
-        --bg-card: #e8f1f8;
-        --accent-color: #1976d2;
-        --accent-light: #e3f2fd;
-        --border-color: #bbdefb;
-      }
-      [data-color-theme="orange"] {
-        --bg-primary: #fff9f5;
-        --bg-card: #fff0e6;
-        --accent-color: #e65100;
-        --accent-light: #ffe0b2;
-        --border-color: #ffcc80;
+      [data-theme="beige"] {
+        --bg-primary: #fdfbf7;
+        --bg-card: #ffffff;
+        --bg-secondary: #f5efe6;
+        --accent: #d4a373;
+        --accent-light: #faedcd;
+        --border-color: #e6ccb2;
       }
 
-      /* Dark Mode Overrides */
+      [data-theme="green"] {
+        --bg-primary: #f4f9f5;
+        --bg-card: #ffffff;
+        --bg-secondary: #e8f5e9;
+        --accent: #52b788;
+        --accent-light: #b7e4c7;
+        --border-color: #d8f3dc;
+      }
+
+      [data-theme="blue"] {
+        --bg-primary: #f0f7ff;
+        --bg-card: #ffffff;
+        --bg-secondary: #e1f0ff;
+        --accent: #4ea8de;
+        --accent-light: #caf0f8;
+        --border-color: #ade8f4;
+      }
+
       [data-mode="dark"] {
-        --bg-primary: #121212;
-        --bg-surface: #1e1e1e;
-        --bg-card: #282828;
-        --text-main: #f5f5f5;
-        --text-muted: #a0a0a0;
-        --border-color: #383838;
-        --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.2);
+        --bg-primary: #12181b;
+        --bg-card: #1e262c;
+        --bg-secondary: #2a343d;
+        --text-main: #f0f4f8;
+        --text-muted: #9fb3c8;
+        --border-color: #33414e;
+        --shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
       }
 
       * {
@@ -88,93 +81,102 @@
         margin: 0;
         padding: 0;
         font-family:
-          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
-          Arial, sans-serif;
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         -webkit-tap-highlight-color: transparent;
       }
-
       body {
         background-color: var(--bg-primary);
         color: var(--text-main);
-        display: flex;
-        justify-content: center;
-        min-height: 100vh;
-        overflow-x: hidden;
+        padding-bottom: calc(var(--nav-height) + 20px);
+        transition: all 0.3s ease;
       }
 
-      /* Mobile Container Frame */
-      .app-frame {
-        width: 100%;
-        max-width: 480px;
-        background-color: var(--bg-primary);
-        min-height: 100vh;
+      /* ONBOARDING SCREEN */
+      #onboarding-screen {
+        position: fixed;
+        inset: 0;
+        background: var(--bg-primary);
+        z-index: 9999;
         display: flex;
         flex-direction: column;
-        position: relative;
-        padding-bottom: 80px; /* Space for Bottom Nav */
-        box-shadow: 0 0 40px rgba(0, 0, 0, 0.05);
-      }
-
-      /* Header Bar */
-      .app-header {
-        padding: 20px 20px 10px 20px;
-        display: flex;
-        justify-content: space-between;
         align-items: center;
-        background: var(--bg-primary);
-        position: sticky;
-        top: 0;
-        z-index: 10;
+        justify-content: space-between;
+        padding: 3rem 1.5rem;
+        text-align: center;
       }
-
-      .user-greeting h2 {
-        font-size: 1.25rem;
-        font-weight: 700;
-      }
-
-      .user-greeting p {
-        font-size: 0.825rem;
-        color: var(--text-muted);
-      }
-
-      .header-actions {
-        display: flex;
-        gap: 12px;
-      }
-
-      .icon-btn {
-        width: 40px;
-        height: 40px;
-        border-radius: var(--radius-full);
-        background: var(--bg-surface);
-        border: 1px solid var(--border-color);
+      .onboard-hero {
+        width: 220px;
+        height: 220px;
+        background: var(--bg-secondary);
+        border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
+        margin-top: 2rem;
+        position: relative;
+      }
+      .onboard-hero i {
+        font-size: 5rem;
+        color: var(--accent);
+      }
+      .onboard-title {
+        font-size: 2.2rem;
+        font-weight: 800;
         color: var(--text-main);
+        margin-top: 1rem;
+      }
+      .onboard-tagline {
+        font-size: 1rem;
+        color: var(--text-muted);
+        margin-top: 0.5rem;
+        font-style: italic;
+      }
+      .onboard-btns {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+        margin-bottom: 1rem;
+      }
+      .btn-primary {
+        background: var(--accent);
+        color: white;
+        border: none;
+        padding: 1rem;
+        border-radius: 30px;
+        font-size: 1.1rem;
+        font-weight: 700;
+        width: 100%;
         cursor: pointer;
-        transition: var(--transition);
+        box-shadow: var(--shadow);
+      }
+      .btn-secondary {
+        background: transparent;
+        color: var(--text-muted);
+        border: none;
+        font-size: 0.95rem;
+        cursor: pointer;
       }
 
-      .icon-btn:active {
-        transform: scale(0.95);
+      /* APP CONTAINER */
+      .app-container {
+        max-width: 480px;
+        margin: 0 auto;
+        padding: 1rem;
       }
 
-      /* Views & Tab Switching */
+      /* VIEW MANAGEMENT */
       .app-view {
         display: none;
-        padding: 0 20px 20px 20px;
-        animation: fadeIn 0.25s ease-in-out;
       }
-
       .app-view.active {
         display: block;
+        animation: fadeIn 0.25s ease-in-out;
       }
-
       @keyframes fadeIn {
         from {
           opacity: 0;
-          transform: translateY(6px);
+          transform: translateY(4px);
         }
         to {
           opacity: 1;
@@ -182,270 +184,191 @@
         }
       }
 
-      /* Cards & Containers */
-      .card {
-        background: var(--bg-surface);
-        border-radius: var(--radius-md);
-        padding: 18px;
-        margin-bottom: 16px;
-        border: 1px solid var(--border-color);
-        box-shadow: var(--shadow-soft);
+      /* HEADER */
+      header.top-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.2rem;
+      }
+      .user-greeting {
+        font-size: 1.3rem;
+        font-weight: 700;
+      }
+      .current-date {
+        font-size: 0.85rem;
+        color: var(--text-muted);
       }
 
+      /* CARDS */
+      .card {
+        background: var(--bg-card);
+        border-radius: var(--radius);
+        padding: 1.2rem;
+        margin-bottom: 1rem;
+        border: 1px solid var(--border-color);
+        box-shadow: var(--shadow);
+      }
       .card-title {
-        font-size: 0.95rem;
-        font-weight: 600;
-        margin-bottom: 12px;
+        font-size: 1rem;
+        font-weight: 700;
+        margin-bottom: 0.8rem;
         display: flex;
         justify-content: space-between;
         align-items: center;
       }
 
-      .card-title span.link {
-        font-size: 0.75rem;
-        color: var(--accent-color);
-        cursor: pointer;
-      }
-
-      /* Summary Metrics Grid */
-      .summary-grid {
+      /* STATS GRID */
+      .stats-grid {
         display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 12px;
-        margin-bottom: 16px;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.5rem;
+        margin-bottom: 1rem;
       }
-
-      .metric-card {
-        background: var(--bg-card);
-        padding: 14px;
-        border-radius: var(--radius-md);
-        display: flex;
-        align-items: center;
-        gap: 12px;
+      .stat-box {
+        background: var(--bg-secondary);
+        border-radius: 12px;
+        padding: 0.6rem 0.3rem;
+        text-align: center;
       }
-
-      .metric-icon {
-        width: 38px;
-        height: 38px;
-        border-radius: var(--radius-sm);
-        background: var(--bg-surface);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.1rem;
-        color: var(--accent-color);
+      .stat-val {
+        font-size: 0.95rem;
+        font-weight: 800;
+        color: var(--accent);
       }
-
-      .metric-data h4 {
-        font-size: 1.05rem;
-        font-weight: 700;
-      }
-
-      .metric-data p {
-        font-size: 0.725rem;
+      .stat-lbl {
+        font-size: 0.65rem;
         color: var(--text-muted);
+        margin-top: 2px;
       }
 
-      /* Progress Bar */
+      /* PROGRESS BAR */
       .progress-bar-container {
-        width: 100%;
-        height: 8px;
-        background: var(--border-color);
-        border-radius: var(--radius-full);
+        background: var(--bg-secondary);
+        height: 10px;
+        border-radius: 5px;
         overflow: hidden;
-        margin-top: 8px;
+        margin: 0.5rem 0;
       }
-
-      .progress-fill {
+      .progress-bar-fill {
+        background: var(--accent);
         height: 100%;
-        background: var(--accent-color);
         width: 0%;
         transition: width 0.4s ease;
       }
 
-      /* Habit / Item Item Row */
+      /* HABIT & TASK ITEMS */
       .item-row {
         display: flex;
-        align-items: center;
         justify-content: space-between;
-        padding: 12px 0;
-        border-bottom: 1px solid var(--border-color);
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid var(--bg-secondary);
       }
-
       .item-row:last-child {
         border-bottom: none;
       }
-
       .item-left {
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: 0.75rem;
       }
-
-      .checkbox-custom {
+      .check-circle {
         width: 22px;
         height: 22px;
-        border-radius: 6px;
-        border: 2px solid var(--border-color);
+        border-radius: 50%;
+        border: 2px solid var(--accent);
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        transition: var(--transition);
-        background: var(--bg-surface);
+      }
+      .check-circle.checked {
+        background: var(--accent);
+        color: white;
       }
 
-      .checkbox-custom.checked {
-        background: var(--accent-color);
-        border-color: var(--accent-color);
-        color: #fff;
-      }
-
-      .item-text h5 {
-        font-size: 0.9rem;
-        font-weight: 600;
-      }
-
-      .item-text h5.completed {
-        text-decoration: line-through;
-        color: var(--text-muted);
-      }
-
-      .item-text p {
+      /* STREAK BADGE */
+      .streak-badge {
+        background: #fff3bf;
+        color: #d9480f;
         font-size: 0.75rem;
-        color: var(--text-muted);
+        font-weight: 700;
+        padding: 0.2rem 0.5rem;
+        border-radius: 10px;
       }
 
-      .badge {
-        font-size: 0.7rem;
-        padding: 3px 8px;
-        border-radius: var(--radius-full);
-        font-weight: 600;
-        background: var(--accent-light);
-        color: var(--accent-color);
-      }
-
-      .badge-break {
-        background: var(--danger-light);
-        color: var(--danger-color);
-      }
-
-      /* Sub-tabs for Section Navigation */
-      .sub-tabs {
-        display: flex;
-        gap: 8px;
-        margin-bottom: 16px;
-        overflow-x: auto;
-        padding-bottom: 4px;
-      }
-
-      .sub-tab-btn {
-        padding: 8px 16px;
-        border-radius: var(--radius-full);
-        background: var(--bg-surface);
-        border: 1px solid var(--border-color);
-        font-size: 0.8rem;
-        font-weight: 600;
-        color: var(--text-muted);
-        cursor: pointer;
-        white-space: nowrap;
-      }
-
-      .sub-tab-btn.active {
-        background: var(--accent-color);
-        color: #fff;
-        border-color: var(--accent-color);
-      }
-
-      /* Bottom Navigation Bar */
+      /* BOTTOM NAV BAR */
       .bottom-nav {
         position: fixed;
         bottom: 0;
-        width: 100%;
-        max-width: 480px;
-        height: 68px;
-        background: var(--bg-surface);
+        left: 0;
+        right: 0;
+        height: var(--nav-height);
+        background: var(--bg-card);
         border-top: 1px solid var(--border-color);
         display: flex;
         justify-content: space-around;
         align-items: center;
+        max-width: 480px;
+        margin: 0 auto;
         z-index: 100;
       }
-
       .nav-item {
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: center;
-        gap: 4px;
         color: var(--text-muted);
-        font-size: 0.7rem;
-        font-weight: 500;
+        font-size: 0.75rem;
+        text-decoration: none;
         cursor: pointer;
-        width: 20%;
-        height: 100%;
       }
-
       .nav-item i {
-        font-size: 1.15rem;
+        font-size: 1.2rem;
+        margin-bottom: 2px;
       }
-
       .nav-item.active {
-        color: var(--accent-color);
+        color: var(--accent);
         font-weight: 700;
       }
-
-      /* FAB Quick Add Button */
-      .fab-add {
-        width: 52px;
-        height: 52px;
-        border-radius: var(--radius-full);
-        background: var(--accent-color);
-        color: #fff;
+      .nav-plus-btn {
+        width: 48px;
+        height: 48px;
+        background: var(--accent);
+        color: white;
+        border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 1.4rem;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        box-shadow: var(--shadow);
+        margin-top: -20px;
         cursor: pointer;
-        margin-top: -24px;
-        transition: var(--transition);
       }
 
-      .fab-add:active {
-        transform: scale(0.9);
-      }
-
-      /* Modal / Popup Windows */
+      /* MODALS */
       .modal-overlay {
         position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
+        inset: 0;
         background: rgba(0, 0, 0, 0.4);
-        backdrop-filter: blur(4px);
-        z-index: 200;
         display: none;
         align-items: flex-end;
         justify-content: center;
+        z-index: 200;
       }
-
       .modal-overlay.active {
         display: flex;
       }
-
-      .modal-card {
-        background: var(--bg-surface);
+      .modal-sheet {
+        background: var(--bg-card);
         width: 100%;
         max-width: 480px;
-        border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-        padding: 24px;
+        border-radius: 24px 24px 0 0;
+        padding: 1.5rem;
         max-height: 85vh;
         overflow-y: auto;
-        animation: slideUp 0.25s ease-out;
+        animation: slideUp 0.3s ease;
       }
-
       @keyframes slideUp {
         from {
           transform: translateY(100%);
@@ -455,677 +378,408 @@
         }
       }
 
-      .modal-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-      }
-
-      .modal-header h3 {
-        font-size: 1.1rem;
-        font-weight: 700;
-      }
-
+      /* FORM ELEMENTS */
       .form-group {
-        margin-bottom: 14px;
+        margin-bottom: 1rem;
       }
-
       .form-group label {
         display: block;
-        font-size: 0.775rem;
+        font-size: 0.85rem;
         color: var(--text-muted);
-        margin-bottom: 6px;
-        font-weight: 600;
+        margin-bottom: 0.3rem;
       }
-
       .form-control {
         width: 100%;
-        padding: 12px;
-        border-radius: var(--radius-sm);
+        padding: 0.75rem;
+        border-radius: 10px;
         border: 1px solid var(--border-color);
         background: var(--bg-primary);
         color: var(--text-main);
-        font-size: 0.9rem;
-        outline: none;
       }
 
-      .form-control:focus {
-        border-color: var(--accent-color);
-      }
-
-      .btn-submit {
-        width: 100%;
-        padding: 14px;
-        border-radius: var(--radius-md);
-        background: var(--accent-color);
-        color: #fff;
-        border: none;
-        font-weight: 600;
-        font-size: 0.95rem;
-        cursor: pointer;
-        margin-top: 10px;
-      }
-
-      /* Grid for Quick Action Options */
-      .quick-action-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 12px;
-        margin-bottom: 20px;
-      }
-
-      .quick-action-item {
-        background: var(--bg-card);
-        border: 1px solid var(--border-color);
-        padding: 16px;
-        border-radius: var(--radius-md);
-        display: flex;
-        flex-direction: column;
+      /* ALARM BANNER */
+      .alarm-banner {
+        position: fixed;
+        top: 1rem;
+        left: 1rem;
+        right: 1rem;
+        max-width: 440px;
+        margin: 0 auto;
+        background: var(--accent);
+        color: white;
+        padding: 1rem;
+        border-radius: 14px;
+        display: none;
+        justify-content: space-between;
         align-items: center;
-        gap: 8px;
-        cursor: pointer;
-        transition: var(--transition);
-      }
-
-      .quick-action-item i {
-        font-size: 1.3rem;
-        color: var(--accent-color);
-      }
-
-      .quick-action-item span {
-        font-size: 0.75rem;
-        font-weight: 600;
-      }
-
-      /* Theme Option Circles */
-      .theme-picker {
-        display: flex;
-        gap: 12px;
-        margin-top: 10px;
-      }
-
-      .theme-circle {
-        width: 32px;
-        height: 32px;
-        border-radius: var(--radius-full);
-        cursor: pointer;
-        border: 2px solid transparent;
-      }
-
-      .theme-circle.active {
-        border-color: var(--text-main);
-      }
-
-      /* Search Bar */
-      .search-box {
-        display: flex;
-        align-items: center;
-        background: var(--bg-surface);
-        border: 1px solid var(--border-color);
-        padding: 8px 14px;
-        border-radius: var(--radius-full);
-        margin-bottom: 16px;
-      }
-
-      .search-box input {
-        border: none;
-        background: transparent;
-        outline: none;
-        color: var(--text-main);
-        margin-left: 8px;
-        width: 100%;
-        font-size: 0.85rem;
-      }
-
-      .calendar-grid-mini {
-        display: grid;
-        grid-template-columns: repeat(7, 1fr);
-        gap: 6px;
-        text-align: center;
-        margin-top: 10px;
-      }
-
-      .cal-day {
-        padding: 8px 0;
-        border-radius: var(--radius-sm);
-        font-size: 0.75rem;
-        cursor: pointer;
-      }
-
-      .cal-day.active {
-        background: var(--accent-color);
-        color: #fff;
+        z-index: 999;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
       }
     </style>
   </head>
   <body>
-    <div class="app-frame" id="appFrame">
-      <!-- HEADER BAR -->
-      <header class="app-header">
-        <div class="user-greeting">
-          <h2 id="greetingText">Good Morning, Aman 👋</h2>
-          <p id="currentDateDisplay">Thursday, Sep 18, 2026</p>
+    <!-- AUDIO ALARM TUNE -->
+    <audio
+      id="alarm-sound"
+      loop
+      src="https://actions.google.com/sounds/v1/alarms/digital_watch_alarm.ogg"
+    ></audio>
+
+    <!-- ALARM NOTIFICATION BANNER -->
+    <div id="alarm-banner" class="alarm-banner">
+      <div>
+        <strong id="alarm-title">Reminder Alert!</strong>
+        <p style="font-size: 0.8rem" id="alarm-msg">
+          It's time for your scheduled reminder.
+        </p>
+      </div>
+      <button
+        onclick="stopAlarm()"
+        style="
+          background: white;
+          color: var(--accent);
+          border: none;
+          padding: 0.5rem 1rem;
+          border-radius: 8px;
+          font-weight: bold;
+          cursor: pointer;
+        "
+      >
+        Dismiss
+      </button>
+    </div>
+
+    <!-- ONBOARDING SCREEN -->
+    <div id="onboarding-screen">
+      <div
+        style="
+          font-size: 0.9rem;
+          color: var(--text-muted);
+          width: 100%;
+          text-align: right;
+          cursor: pointer;
+        "
+        onclick="completeOnboarding()"
+      >
+        Skip
+      </div>
+      <div>
+        <div class="onboard-hero">
+          <i class="fa-solid fa-leaf"></i>
         </div>
-        <div class="header-actions">
-          <button class="icon-btn" onclick="openSearchModal()">
-            <i class="fa-solid fa-magnifying-glass"></i>
-          </button>
-          <button class="icon-btn" onclick="switchView('profile')">
-            <i class="fa-regular fa-user"></i>
-          </button>
+        <h1 class="onboard-title">DailyLife</h1>
+        <p class="onboard-tagline">Small steps. A better you.</p>
+      </div>
+      <div class="onboard-btns">
+        <button class="btn-primary" onclick="completeOnboarding()">
+          Get Started <i class="fa-solid fa-arrow-right"></i>
+        </button>
+        <button class="btn-secondary" onclick="completeOnboarding()">
+          Already have an account? <strong>Sign In</strong>
+        </button>
+      </div>
+    </div>
+
+    <!-- MAIN APP CONTAINER -->
+    <div class="app-container" id="main-app" style="display: none">
+      <header class="top-header">
+        <div>
+          <div class="user-greeting">Good Morning, Aman 👋</div>
+          <div class="current-date" id="display-date">Friday, Sep 18</div>
         </div>
+        <i
+          class="fa-solid fa-gear"
+          style="font-size: 1.2rem; color: var(--text-muted); cursor: pointer"
+          onclick="switchTab('profile')"
+        ></i>
       </header>
 
-      <!-- 1. HOME VIEW (DAILY COMMAND CENTER) -->
-      <main id="view-home" class="app-view active">
-        <!-- Progress Summary Banner -->
+      <!-- 1. HOME TAB -->
+      <div id="view-home" class="app-view active">
+        <div class="stats-grid">
+          <div class="stat-box">
+            <div class="stat-val" id="stat-goals-val">0/0</div>
+            <div class="stat-lbl">Goals</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-val" id="stat-habits-val">0/0</div>
+            <div class="stat-lbl">Habits</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-val" id="stat-spent-val">₹0</div>
+            <div class="stat-lbl">Spent</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-val" id="stat-streak-val">0d</div>
+            <div class="stat-lbl">Streak</div>
+          </div>
+        </div>
+
         <div class="card">
           <div class="card-title">
             <span>Today's Progress</span>
-            <span id="homeProgressPercent">0%</span>
+            <span id="progress-percent" style="color: var(--accent)">0%</span>
           </div>
           <div class="progress-bar-container">
-            <div class="progress-fill" id="homeProgressBar"></div>
-          </div>
-        </div>
-
-        <!-- Quick Summary Cards -->
-        <div class="summary-grid">
-          <div class="metric-card">
-            <div class="metric-icon"><i class="fa-solid fa-bullseye"></i></div>
-            <div class="metric-data">
-              <h4 id="homeGoalsSummary">0/0</h4>
-              <p>Goals Met</p>
-            </div>
-          </div>
-          <div class="metric-card">
-            <div class="metric-icon"><i class="fa-solid fa-fire"></i></div>
-            <div class="metric-data">
-              <h4 id="homeStreakSummary">0 Days</h4>
-              <p>Best Streak</p>
-            </div>
-          </div>
-          <div class="metric-card">
-            <div class="metric-icon"><i class="fa-solid fa-wallet"></i></div>
-            <div class="metric-data">
-              <h4 id="homeSpentSummary">₹0</h4>
-              <p>Spent Today</p>
-            </div>
-          </div>
-          <div class="metric-card">
-            <div class="metric-icon">
-              <i class="fa-solid fa-piggy-bank"></i>
-            </div>
-            <div class="metric-data">
-              <h4 id="homeBudgetSummary">₹0</h4>
-              <p>Budget Left</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Active Habits & Tasks List -->
-        <div class="card">
-          <div class="card-title">
-            <span>Today's Activities</span>
-            <span class="link" onclick="switchView('routine')">See All</span>
-          </div>
-          <div id="homeActivitiesList">
-            <!-- Dynamic Items -->
-          </div>
-        </div>
-
-        <!-- Today's Note Quick View -->
-        <div class="card">
-          <div class="card-title">
-            <span>Today's Reflection / Journal</span>
-            <span class="link" onclick="switchView('life')">Notes</span>
-          </div>
-          <p
-            id="homeNotePreview"
-            style="
-              font-size: 0.85rem;
-              color: var(--text-muted);
-              font-style: italic;
-            "
-          >
-            No note written for today yet...
-          </p>
-        </div>
-      </main>
-
-      <!-- 2. ROUTINE VIEW (GOALS, HABITS, STREAKS) -->
-      <main id="view-routine" class="app-view">
-        <div class="sub-tabs">
-          <button
-            class="sub-tab-btn active"
-            onclick="filterRoutine('all', this)"
-          >
-            All
-          </button>
-          <button class="sub-tab-btn" onclick="filterRoutine('build', this)">
-            🔥 Build Habits
-          </button>
-          <button class="sub-tab-btn" onclick="filterRoutine('break', this)">
-            🚫 Break Habits
-          </button>
-          <button class="sub-tab-btn" onclick="filterRoutine('goal', this)">
-            🎯 Goals
-          </button>
-        </div>
-
-        <div class="card">
-          <div class="card-title">
-            <span>Habits & Goals Tracker</span>
-          </div>
-          <div id="routineList">
-            <!-- Dynamic Routine Items -->
-          </div>
-        </div>
-      </main>
-
-      <!-- 3. MONEY VIEW (EXPENSES & BUDGET) -->
-      <main id="view-money" class="app-view">
-        <div class="summary-grid">
-          <div class="metric-card">
-            <div class="metric-icon"><i class="fa-solid fa-chart-pie"></i></div>
-            <div class="metric-data">
-              <h4 id="moneyMonthSpent">₹0</h4>
-              <p>Month Spent</p>
-            </div>
-          </div>
-          <div class="metric-card">
-            <div class="metric-icon">
-              <i class="fa-solid fa-scale-balanced"></i>
-            </div>
-            <div class="metric-data">
-              <h4 id="moneyMonthRemaining">₹0</h4>
-              <p>Budget Balance</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Category Chart -->
-        <div class="card">
-          <div class="card-title"><span>Monthly Category Breakdown</span></div>
-          <canvas id="expenseChart" style="max-height: 180px"></canvas>
-        </div>
-
-        <!-- Expense List -->
-        <div class="card">
-          <div class="card-title"><span>Recent Transactions</span></div>
-          <div id="expenseListContainer">
-            <!-- Dynamic Expenses -->
-          </div>
-        </div>
-      </main>
-
-      <!-- 4. LIFE VIEW (NOTES, LISTS, CALENDAR) -->
-      <main id="view-life" class="app-view">
-        <div class="sub-tabs">
-          <button
-            class="sub-tab-btn active"
-            onclick="switchLifeSubTab('notes', this)"
-          >
-            📝 Notes & Journal
-          </button>
-          <button class="sub-tab-btn" onclick="switchLifeSubTab('lists', this)">
-            ☑️ Custom Checklists
-          </button>
-          <button
-            class="sub-tab-btn"
-            onclick="switchLifeSubTab('calendar', this)"
-          >
-            📅 History Calendar
-          </button>
-        </div>
-
-        <!-- Notes Sub Section -->
-        <div id="life-sub-notes">
-          <div class="card">
-            <div class="card-title"><span>Journal Entries</span></div>
-            <div id="notesContainer"></div>
-          </div>
-        </div>
-
-        <!-- Checklists Sub Section -->
-        <div id="life-sub-lists" style="display: none">
-          <div class="card">
-            <div class="card-title"><span>Active Lists</span></div>
-            <div id="checklistsContainer"></div>
-          </div>
-        </div>
-
-        <!-- Calendar Sub Section -->
-        <div id="life-sub-calendar" style="display: none">
-          <div class="card">
-            <div class="card-title">
-              <span id="calMonthYear">Sep 2026</span>
-            </div>
-            <div class="calendar-grid-mini" id="miniCalendarGrid"></div>
-          </div>
-          <div class="card" id="calDaySummaryCard">
-            <div class="card-title"><span>Activity Summary</span></div>
-            <p
-              id="calDayDetails"
-              style="font-size: 0.825rem; color: var(--text-muted)"
-            >
-              Select a date on the calendar above to view history logs.
-            </p>
-          </div>
-        </div>
-      </main>
-
-      <!-- 5. PROFILE & SETTINGS VIEW -->
-      <main id="view-profile" class="app-view">
-        <div class="card">
-          <div class="card-title"><span>User Profile</span></div>
-          <div class="form-group">
-            <label>Your Name</label>
-            <input
-              type="text"
-              id="userNameInput"
-              class="form-control"
-              value="Aman"
-              onchange="updateProfileName(this.value)"
-            />
-          </div>
-          <div class="form-group">
-            <label>Monthly Budget (₹)</label>
-            <input
-              type="number"
-              id="userBudgetInput"
-              class="form-control"
-              value="20000"
-              onchange="updateProfileBudget(this.value)"
-            />
+            <div class="progress-bar-fill" id="progress-bar"></div>
           </div>
         </div>
 
         <div class="card">
-          <div class="card-title"><span>Appearance & Theme</span></div>
-          <div class="form-group">
-            <label>Theme Mode</label>
-            <select
-              id="modeSelect"
-              class="form-control"
-              onchange="changeThemeMode(this.value)"
-            >
-              <option value="light">☀️ Light Mode</option>
-              <option value="dark">🌙 Dark Mode</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Color Accent Palette</label>
-            <div class="theme-picker">
-              <div
-                class="theme-circle active"
-                style="background: #2d5a27"
-                onclick="changeColorPalette('default', this)"
-              ></div>
-              <div
-                class="theme-circle"
-                style="background: #d81b60"
-                onclick="changeColorPalette('pink', this)"
-              ></div>
-              <div
-                class="theme-circle"
-                style="background: #2e7d32"
-                onclick="changeColorPalette('green', this)"
-              ></div>
-              <div
-                class="theme-circle"
-                style="background: #1976d2"
-                onclick="changeColorPalette('blue', this)"
-              ></div>
-              <div
-                class="theme-circle"
-                style="background: #e65100"
-                onclick="changeColorPalette('orange', this)"
-              ></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="card">
-          <button
-            class="btn-submit"
-            style="background: var(--danger-color)"
-            onclick="exportDataBackup()"
-          >
-            📥 Backup Data (Export JSON)
-          </button>
-        </div>
-      </main>
-
-      <!-- BOTTOM NAVIGATION BAR -->
-      <nav class="bottom-nav">
-        <div class="nav-item active" onclick="switchView('home', this)">
-          <i class="fa-solid fa-house"></i>
-          <span>Home</span>
-        </div>
-        <div class="nav-item" onclick="switchView('money', this)">
-          <i class="fa-solid fa-wallet"></i>
-          <span>Finance</span>
-        </div>
-        <div class="fab-add" onclick="openQuickAddModal()">
-          <i class="fa-solid fa-plus"></i>
-        </div>
-        <div class="nav-item" onclick="switchView('routine', this)">
-          <i class="fa-solid fa-calendar-check"></i>
-          <span>Routine</span>
-        </div>
-        <div class="nav-item" onclick="switchView('life', this)">
-          <i class="fa-solid fa-book-open"></i>
-          <span>Life</span>
-        </div>
-      </nav>
-
-      <!-- QUICK ADD MODAL -->
-      <div class="modal-overlay" id="quickAddModal">
-        <div class="modal-card">
-          <div class="modal-header">
-            <h3>Quick Action</h3>
-            <button class="icon-btn" onclick="closeModal('quickAddModal')">
-              <i class="fa-solid fa-xmark"></i>
-            </button>
-          </div>
-
-          <div class="quick-action-grid">
-            <div class="quick-action-item" onclick="openFormModal('habit')">
-              <i class="fa-solid fa-fire"></i>
-              <span>Habit / Streak</span>
-            </div>
-            <div class="quick-action-item" onclick="openFormModal('goal')">
-              <i class="fa-solid fa-bullseye"></i>
-              <span>Goal</span>
-            </div>
-            <div class="quick-action-item" onclick="openFormModal('expense')">
-              <i class="fa-solid fa-indian-rupee-sign"></i>
-              <span>Expense</span>
-            </div>
-            <div class="quick-action-item" onclick="openFormModal('note')">
-              <i class="fa-solid fa-pen"></i>
-              <span>Note Journal</span>
-            </div>
-            <div class="quick-action-item" onclick="openFormModal('list')">
-              <i class="fa-solid fa-list-check"></i>
-              <span>Checklist</span>
-            </div>
-          </div>
+          <div class="card-title">Today's Routine</div>
+          <div id="home-routine-list"></div>
         </div>
       </div>
 
-      <!-- FORM DYNAMIC MODAL -->
-      <div class="modal-overlay" id="formModal">
-        <div class="modal-card">
-          <div class="modal-header">
-            <h3 id="formModalTitle">Add Item</h3>
-            <button class="icon-btn" onclick="closeModal('formModal')">
-              <i class="fa-solid fa-xmark"></i>
-            </button>
-          </div>
-          <div id="formModalBody"></div>
+      <!-- 2. ROUTINE & HABITS TAB -->
+      <div id="view-routine" class="app-view">
+        <div class="card">
+          <div class="card-title">Ongoing Challenges & Habits</div>
+          <div id="routine-habits-list"></div>
         </div>
       </div>
 
-      <!-- GLOBAL SEARCH MODAL -->
-      <div class="modal-overlay" id="searchModal">
-        <div class="modal-card">
-          <div class="modal-header">
-            <h3>Search DayCore</h3>
-            <button class="icon-btn" onclick="closeModal('searchModal')">
-              <i class="fa-solid fa-xmark"></i>
+      <!-- 3. FINANCE TAB -->
+      <div id="view-finance" class="app-view">
+        <div class="card">
+          <div class="card-title">Monthly Budget</div>
+          <h2
+            style="color: var(--accent); font-size: 1.8rem; margin: 0.4rem 0"
+            id="finance-spent"
+          >
+            ₹0
+          </h2>
+          <div class="current-date">Spent of ₹20,000 Budget</div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Recent Transactions</div>
+          <div id="finance-expense-list"></div>
+        </div>
+      </div>
+
+      <!-- 4. REMINDERS & ALARMS TAB -->
+      <div id="view-reminders" class="app-view">
+        <div class="card">
+          <div class="card-title">
+            <span>Custom Alarms & Reminders</span>
+            <button
+              style="
+                background: var(--accent);
+                color: white;
+                border: none;
+                padding: 0.3rem 0.6rem;
+                border-radius: 8px;
+                font-size: 0.8rem;
+                cursor: pointer;
+              "
+              onclick="openModal('reminder')"
+            >
+              + Add
             </button>
           </div>
-          <div class="search-box">
-            <i class="fa-solid fa-magnifying-glass"></i>
-            <input
-              type="text"
-              id="searchInput"
-              placeholder="Search habits, goals, notes..."
-              oninput="executeGlobalSearch(this.value)"
-            />
+          <div id="reminders-list"></div>
+        </div>
+      </div>
+
+      <!-- 5. PROFILE & SETTINGS TAB -->
+      <div id="view-profile" class="app-view">
+        <div class="card">
+          <div class="card-title">Theme Engine</div>
+          <div style="display: flex; gap: 0.5rem; margin-top: 0.8rem">
+            <button
+              style="
+                flex: 1;
+                padding: 0.5rem;
+                border-radius: 8px;
+                border: 1px solid var(--border-color);
+                background: #e56b6f;
+                color: white;
+              "
+              onclick="setTheme('pink')"
+            >
+              Pink
+            </button>
+            <button
+              style="
+                flex: 1;
+                padding: 0.5rem;
+                border-radius: 8px;
+                border: 1px solid var(--border-color);
+                background: #d4a373;
+                color: white;
+              "
+              onclick="setTheme('beige')"
+            >
+              Beige
+            </button>
+            <button
+              style="
+                flex: 1;
+                padding: 0.5rem;
+                border-radius: 8px;
+                border: 1px solid var(--border-color);
+                background: #52b788;
+                color: white;
+              "
+              onclick="setTheme('green')"
+            >
+              Green
+            </button>
+            <button
+              style="
+                flex: 1;
+                padding: 0.5rem;
+                border-radius: 8px;
+                border: 1px solid var(--border-color);
+                background: #4ea8de;
+                color: white;
+              "
+              onclick="setTheme('blue')"
+            >
+              Blue
+            </button>
           </div>
-          <div id="searchResultsList"></div>
         </div>
       </div>
     </div>
 
-    <script>
-      /* ==========================================================================
-       DAYCORE CORE STATE MANAGER
-       ========================================================================== */
-      const STATE_KEY = "daycore_app_state_v1";
+    <!-- BOTTOM NAVIGATION BAR -->
+    <nav class="bottom-nav">
+      <div class="nav-item active" onclick="switchTab('home')">
+        <i class="fa-solid fa-house"></i>
+        <span>Home</span>
+      </div>
+      <div class="nav-item" onclick="switchTab('finance')">
+        <i class="fa-solid fa-wallet"></i>
+        <span>Finance</span>
+      </div>
+      <div class="nav-plus-btn" onclick="openModal('quick')">
+        <i class="fa-solid fa-plus"></i>
+      </div>
+      <div class="nav-item" onclick="switchTab('routine')">
+        <i class="fa-solid fa-calendar-check"></i>
+        <span>Routine</span>
+      </div>
+      <div class="nav-item" onclick="switchTab('reminders')">
+        <i class="fa-solid fa-bell"></i>
+        <span>Reminders</span>
+      </div>
+    </nav>
 
-      let state = {
-        profile: {
-          name: "Aman",
-          monthlyBudget: 20000,
-          themeMode: "light",
-          colorPalette: "default",
-        },
-        routines: [
+    <!-- ACTION MODAL -->
+    <div class="modal-overlay" id="action-modal">
+      <div class="modal-sheet">
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+          "
+        >
+          <h3 id="modal-title">Quick Action</h3>
+          <i
+            class="fa-solid fa-xmark"
+            style="cursor: pointer"
+            onclick="closeModal()"
+          ></i>
+        </div>
+        <div id="modal-content"></div>
+      </div>
+    </div>
+
+    <script>
+      // APP STATE & DATA STORAGE
+      const appState = {
+        habits: [
           {
-            id: "1",
-            title: "Study DSA",
-            type: "build",
-            category: "Education",
-            streak: 12,
-            bestStreak: 21,
-            completedDates: [],
-          },
-          {
-            id: "2",
+            id: "nosmoke",
             title: "No Smoking",
+            target: 21,
             type: "break",
-            category: "Health",
-            streak: 7,
-            bestStreak: 15,
-            completedDates: [],
-            relapses: [],
+            count: 0,
           },
           {
-            id: "3",
-            title: "Read 20 pages",
-            type: "goal",
-            category: "Personal",
-            targetDate: "2026-09-30",
-            completedDates: [],
+            id: "nodrink",
+            title: "No Drinking",
+            target: 21,
+            type: "break",
+            count: 0,
+          },
+          { id: "nofap", title: "No Fap", target: 21, type: "break", count: 0 },
+          {
+            id: "dsa",
+            title: "DSA Practice (100 Mins)",
+            target: 45,
+            type: "build",
+            count: 0,
+          },
+          {
+            id: "posting",
+            title: "LinkedIn & X Post",
+            target: 45,
+            type: "build",
+            count: 0,
           },
         ],
-        expenses: [
-          {
-            id: "e1",
-            desc: "Lunch & Coffee",
-            amount: 350,
-            category: "Food",
-            date: "2026-09-18",
-          },
-        ],
-        notes: [
-          {
-            id: "n1",
-            title: "Sep 18 Reflection",
-            content: "Worked on my project and studied DSA binary trees.",
-            date: "2026-09-18",
-          },
-        ],
-        checklists: [
-          {
-            id: "c1",
-            title: "Grocery Shopping",
-            items: [
-              { text: "Milk", done: true },
-              { text: "Eggs", done: false },
-            ],
-          },
+        expenses: [],
+        reminders: [
+          { id: 1, title: "Drink Water 💧", time: "14:00", active: true },
+          { id: 2, title: "Study DSA 📚", time: "19:00", active: true },
         ],
       };
 
-      let chartInstance = null;
-      const todayStr = new Date().toISOString().split("T")[0];
+      function getTodayKey() {
+        return new Date().toISOString().split("T")[0];
+      }
 
-      function loadState() {
-        const saved = localStorage.getItem(STATE_KEY);
-        if (saved) {
-          try {
-            state = JSON.parse(saved);
-          } catch (e) {
-            console.error(e);
-          }
+      function completeOnboarding() {
+        localStorage.setItem("daycore_onboarded", "true");
+        document.getElementById("onboarding-screen").style.display = "none";
+        document.getElementById("main-app").style.display = "block";
+      }
+
+      function init() {
+        if (!localStorage.getItem("daycore_onboarded")) {
+          document.getElementById("onboarding-screen").style.display = "flex";
+        } else {
+          document.getElementById("main-app").style.display = "block";
         }
-        applyThemeSettings();
-        renderAllViews();
+
+        loadPersistentData();
+        renderAll();
+        startAlarmChecker();
       }
 
-      function saveState() {
-        localStorage.setItem(STATE_KEY, JSON.stringify(state));
-        renderAllViews();
-      }
+      function loadPersistentData() {
+        const savedHabits = localStorage.getItem("daycore_habits");
+        if (savedHabits) appState.habits = JSON.parse(savedHabits);
 
-      /* Theme & Appearance Switches */
-      function applyThemeSettings() {
-        document.body.setAttribute(
-          "data-mode",
-          state.profile.themeMode || "light",
+        const savedReminders = localStorage.getItem("daycore_reminders");
+        if (savedReminders) appState.reminders = JSON.parse(savedReminders);
+
+        const todayData = localStorage.getItem(
+          `daycore_history_${getTodayKey()}`,
         );
-        document.body.setAttribute(
-          "data-color-theme",
-          state.profile.colorPalette || "default",
+        if (todayData) appState.expenses = JSON.parse(todayData).expenses || [];
+      }
+
+      function savePersistentData() {
+        localStorage.setItem("daycore_habits", JSON.stringify(appState.habits));
+        localStorage.setItem(
+          "daycore_reminders",
+          JSON.stringify(appState.reminders),
         );
-        document.getElementById("userNameInput").value = state.profile.name;
-        document.getElementById("userBudgetInput").value =
-          state.profile.monthlyBudget;
-        document.getElementById("greetingText").innerText =
-          `Good Morning, ${state.profile.name} 👋`;
+
+        const todayLog = { expenses: appState.expenses };
+        localStorage.setItem(
+          `daycore_history_${getTodayKey()}`,
+          JSON.stringify(todayLog),
+        );
       }
 
-      function changeThemeMode(mode) {
-        state.profile.themeMode = mode;
-        saveState();
-      }
-
-      function changeColorPalette(palette, el) {
-        document
-          .querySelectorAll(".theme-circle")
-          .forEach((c) => c.classList.remove("active"));
-        if (el) el.classList.add("active");
-        state.profile.colorPalette = palette;
-        saveState();
-      }
-
-      function updateProfileName(val) {
-        state.profile.name = val;
-        saveState();
-      }
-      function updateProfileBudget(val) {
-        state.profile.monthlyBudget = parseFloat(val) || 0;
-        saveState();
-      }
-
-      /* Navigation & View Switching */
-      function switchView(viewName, el) {
+      function switchTab(viewName) {
         document
           .querySelectorAll(".app-view")
           .forEach((v) => v.classList.remove("active"));
@@ -1136,399 +790,170 @@
         const targetView = document.getElementById(`view-${viewName}`);
         if (targetView) targetView.classList.add("active");
 
-        if (el) el.classList.add("active");
-        if (viewName === "money") renderMoneyChart();
+        renderAll();
       }
 
-      function switchLifeSubTab(sub, el) {
-        document
-          .querySelectorAll("#view-life .sub-tab-btn")
-          .forEach((b) => b.classList.remove("active"));
-        if (el) el.classList.add("active");
-
-        document.getElementById("life-sub-notes").style.display =
-          sub === "notes" ? "block" : "none";
-        document.getElementById("life-sub-lists").style.display =
-          sub === "lists" ? "block" : "none";
-        document.getElementById("life-sub-calendar").style.display =
-          sub === "calendar" ? "block" : "none";
-
-        if (sub === "calendar") renderMiniCalendar();
-      }
-
-      /* Modal Handlers */
-      function openQuickAddModal() {
-        document.getElementById("quickAddModal").classList.add("active");
-      }
-      function openSearchModal() {
-        document.getElementById("searchModal").classList.add("active");
-      }
-      function closeModal(id) {
-        document.getElementById(id).classList.remove("active");
-      }
-
-      /* Form Dynamic Opener */
-      function openFormModal(type) {
-        closeModal("quickAddModal");
-        const modal = document.getElementById("formModal");
-        const title = document.getElementById("formModalTitle");
-        const body = document.getElementById("formModalBody");
-
-        if (type === "habit" || type === "goal") {
-          title.innerText =
-            type === "habit" ? "Add New Habit / Streak" : "Add New Goal";
-          body.innerHTML = `
-          <div class="form-group">
-            <label>Title</label>
-            <input type="text" id="inpTitle" class="form-control" placeholder="e.g. Study DSA / No Smoking">
-          </div>
-          <div class="form-group">
-            <label>Type</label>
-            <select id="inpType" class="form-control">
-              <option value="build">🔥 Build Habit (Do daily)</option>
-              <option value="break">🚫 Break Habit (Avoid daily)</option>
-              <option value="goal">🎯 Target Goal</option>
-            </select>
-          </div>
-          <button class="btn-submit" onclick="submitRoutineForm()">Save Habit / Goal</button>
-        `;
-        } else if (type === "expense") {
-          title.innerText = "Log Daily Expense";
-          body.innerHTML = `
-          <div class="form-group">
-            <label>Description</label>
-            <input type="text" id="inpExpDesc" class="form-control" placeholder="e.g. Food, Coffee, Transport">
-          </div>
-          <div class="form-group">
-            <label>Amount (₹)</label>
-            <input type="number" id="inpExpAmt" class="form-control" placeholder="0">
-          </div>
-          <div class="form-group">
-            <label>Category</label>
-            <select id="inpExpCat" class="form-control">
-              <option value="Food">🍔 Food</option>
-              <option value="Transport">🚗 Transport</option>
-              <option value="Shopping">🛍️ Shopping</option>
-              <option value="Education">📚 Education</option>
-              <option value="Bills">💡 Bills</option>
-            </select>
-          </div>
-          <button class="btn-submit" onclick="submitExpenseForm()">Log Expense</button>
-        `;
-        } else if (type === "note") {
-          title.innerText = "Add Reflection / Journal";
-          body.innerHTML = `
-          <div class="form-group">
-            <label>Title</label>
-            <input type="text" id="inpNoteTitle" class="form-control" value="Journal entry - ${todayStr}">
-          </div>
-          <div class="form-group">
-            <label>Notes</label>
-            <textarea id="inpNoteContent" class="form-control" rows="4" placeholder="How was your day? What went well?"></textarea>
-          </div>
-          <button class="btn-submit" onclick="submitNoteForm()">Save Journal Note</button>
-        `;
-        } else if (type === "list") {
-          title.innerText = "Create Checklist";
-          body.innerHTML = `
-          <div class="form-group">
-            <label>Checklist Title</label>
-            <input type="text" id="inpListTitle" class="form-control" placeholder="e.g. Grocery, College Prep">
-          </div>
-          <button class="btn-submit" onclick="submitListForm()">Create List</button>
-        `;
+      function toggleHabit(id) {
+        const habit = appState.habits.find((h) => h.id === id);
+        if (habit) {
+          habit.completed = !habit.completed;
+          habit.count = habit.completed
+            ? habit.count + 1
+            : Math.max(0, habit.count - 1);
+          savePersistentData();
+          renderAll();
         }
-        modal.classList.add("active");
       }
 
-      /* Submissions */
-      function submitRoutineForm() {
-        const title = document.getElementById("inpTitle").value.trim();
-        const type = document.getElementById("inpType").value;
-        if (!title) return;
-        state.routines.push({
-          id: Date.now().toString(),
-          title,
-          type,
-          streak: 0,
-          bestStreak: 0,
-          completedDates: [],
-        });
-        saveState();
-        closeModal("formModal");
-      }
+      function renderAll() {
+        // Render Routine List
+        const homeList = document.getElementById("home-routine-list");
+        const routineList = document.getElementById("routine-habits-list");
+        homeList.innerHTML = "";
+        routineList.innerHTML = "";
 
-      function submitExpenseForm() {
-        const desc = document.getElementById("inpExpDesc").value.trim();
-        const amount = parseFloat(document.getElementById("inpExpAmt").value);
-        const category = document.getElementById("inpExpCat").value;
-        if (!desc || isNaN(amount)) return;
-        state.expenses.push({
-          id: Date.now().toString(),
-          desc,
-          amount,
-          category,
-          date: todayStr,
-        });
-        saveState();
-        closeModal("formModal");
-      }
+        let completedCount = 0;
 
-      function submitNoteForm() {
-        const title = document.getElementById("inpNoteTitle").value.trim();
-        const content = document.getElementById("inpNoteContent").value.trim();
-        if (!content) return;
-        state.notes.unshift({
-          id: Date.now().toString(),
-          title,
-          content,
-          date: todayStr,
-        });
-        saveState();
-        closeModal("formModal");
-      }
+        appState.habits.forEach((h) => {
+          if (h.completed) completedCount++;
 
-      function submitListForm() {
-        const title = document.getElementById("inpListTitle").value.trim();
-        if (!title) return;
-        state.checklists.push({ id: Date.now().toString(), title, items: [] });
-        saveState();
-        closeModal("formModal");
-      }
-
-      /* Toggle Item Completions */
-      function toggleRoutineCompletion(id) {
-        const item = state.routines.find((r) => r.id === id);
-        if (!item) return;
-        const idx = item.completedDates.indexOf(todayStr);
-        if (idx > -1) {
-          item.completedDates.splice(idx, 1);
-          item.streak = Math.max(0, item.streak - 1);
-        } else {
-          item.completedDates.push(todayStr);
-          item.streak += 1;
-          if (item.streak > item.bestStreak) item.bestStreak = item.streak;
-        }
-        saveState();
-      }
-
-      /* Render Engine */
-      function renderAllViews() {
-        renderHomeView();
-        renderRoutineView();
-        renderMoneyView();
-        renderLifeView();
-      }
-
-      function renderHomeView() {
-        const totalRoutines = state.routines.length;
-        const completedToday = state.routines.filter((r) =>
-          r.completedDates.includes(todayStr),
-        ).length;
-        const pct = totalRoutines
-          ? Math.round((completedToday / totalRoutines) * 100)
-          : 0;
-
-        document.getElementById("homeProgressPercent").innerText = `${pct}%`;
-        document.getElementById("homeProgressBar").style.width = `${pct}%`;
-        document.getElementById("homeGoalsSummary").innerText =
-          `${completedToday}/${totalRoutines}`;
-
-        const bestStreak = state.routines.reduce(
-          (max, r) => (r.streak > max ? r.streak : max),
-          0,
-        );
-        document.getElementById("homeStreakSummary").innerText =
-          `${bestStreak} Days`;
-
-        const todaySpent = state.expenses
-          .filter((e) => e.date === todayStr)
-          .reduce((sum, e) => sum + e.amount, 0);
-        document.getElementById("homeSpentSummary").innerText =
-          `₹${todaySpent}`;
-
-        const monthSpent = state.expenses.reduce((sum, e) => sum + e.amount, 0);
-        const remaining = Math.max(0, state.profile.monthlyBudget - monthSpent);
-        document.getElementById("homeBudgetSummary").innerText =
-          `₹${remaining}`;
-
-        /* Render Dynamic Home Activities */
-        const listEl = document.getElementById("homeActivitiesList");
-        listEl.innerHTML = "";
-        if (state.routines.length === 0) {
-          listEl.innerHTML = `<p style="font-size:0.8rem; color:var(--text-muted);">No routines added yet.</p>`;
-        } else {
-          state.routines.forEach((r) => {
-            const isDone = r.completedDates.includes(todayStr);
-            const row = document.createElement("div");
-            row.className = "item-row";
-            row.innerHTML = `
-            <div class="item-left">
-              <div class="checkbox-custom ${isDone ? "checked" : ""}" onclick="toggleRoutineCompletion('${r.id}')">
-                ${isDone ? '<i class="fa-solid fa-check" style="font-size:0.75rem;"></i>' : ""}
-              </div>
-              <div class="item-text">
-                <h5 class="${isDone ? "completed" : ""}">${r.title}</h5>
-                <p>Streak: ${r.streak} days</p>
-              </div>
-            </div>
-            <span class="badge ${r.type === "break" ? "badge-break" : ""}">${r.type.toUpperCase()}</span>
-          `;
-            listEl.appendChild(row);
-          });
-        }
-
-        /* Note Preview */
-        const todayNote = state.notes.find((n) => n.date === todayStr);
-        document.getElementById("homeNotePreview").innerText = todayNote
-          ? `"${todayNote.content}"`
-          : "No note written for today yet...";
-      }
-
-      function renderRoutineView() {
-        const container = document.getElementById("routineList");
-        container.innerHTML = "";
-        state.routines.forEach((r) => {
-          const isDone = r.completedDates.includes(todayStr);
           const row = document.createElement("div");
           row.className = "item-row";
           row.innerHTML = `
           <div class="item-left">
-            <div class="checkbox-custom ${isDone ? "checked" : ""}" onclick="toggleRoutineCompletion('${r.id}')">
-              ${isDone ? '<i class="fa-solid fa-check" style="font-size:0.75rem;"></i>' : ""}
+            <div class="check-circle ${h.completed ? "checked" : ""}" onclick="toggleHabit('${h.id}')">
+              ${h.completed ? '<i class="fa-solid fa-check" style="font-size: 0.7rem;"></i>' : ""}
             </div>
-            <div class="item-text">
-              <h5 class="${isDone ? "completed" : ""}">${r.title}</h5>
-              <p>Current: 🔥 ${r.streak}d | Best: 🏆 ${r.bestStreak}d</p>
-            </div>
+            <span>${h.title}</span>
           </div>
-          <span class="badge ${r.type === "break" ? "badge-break" : ""}">${r.type}</span>
+          <span class="streak-badge">🔥 ${h.count}/${h.target}d</span>
         `;
-          container.appendChild(row);
+          homeList.appendChild(row);
+          routineList.appendChild(row.cloneNode(true));
+        });
+
+        // Progress Calculation
+        const percent =
+          Math.round((completedCount / appState.habits.length) * 100) || 0;
+        document.getElementById("progress-bar").style.width = `${percent}%`;
+        document.getElementById("progress-percent").innerText = `${percent}%`;
+        document.getElementById("stat-habits-val").innerText =
+          `${completedCount}/${appState.habits.length}`;
+
+        // Render Finance
+        const expList = document.getElementById("finance-expense-list");
+        expList.innerHTML = "";
+        let totalSpent = 0;
+
+        appState.expenses.forEach((e) => {
+          totalSpent += e.amt;
+          const div = document.createElement("div");
+          div.className = "item-row";
+          div.innerHTML = `<span>${e.title}</span><strong>₹${e.amt}</strong>`;
+          expList.appendChild(div);
+        });
+
+        document.getElementById("finance-spent").innerText = `₹${totalSpent}`;
+        document.getElementById("stat-spent-val").innerText = `₹${totalSpent}`;
+
+        // Render Reminders
+        const remList = document.getElementById("reminders-list");
+        remList.innerHTML = "";
+        appState.reminders.forEach((r) => {
+          const div = document.createElement("div");
+          div.className = "item-row";
+          div.innerHTML = `
+          <span>${r.title}</span>
+          <span style="font-weight: bold; color: var(--accent);">${r.time}</span>
+        `;
+          remList.appendChild(div);
         });
       }
 
-      function renderMoneyView() {
-        const monthSpent = state.expenses.reduce((sum, e) => sum + e.amount, 0);
-        document.getElementById("moneyMonthSpent").innerText = `₹${monthSpent}`;
-        document.getElementById("moneyMonthRemaining").innerText =
-          `₹${Math.max(0, state.profile.monthlyBudget - monthSpent)}`;
+      /* ALARM CHECKER ENGINE */
+      function startAlarmChecker() {
+        setInterval(() => {
+          const now = new Date();
+          const currentTime = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
 
-        const listContainer = document.getElementById("expenseListContainer");
-        listContainer.innerHTML = "";
-        state.expenses
-          .slice()
-          .reverse()
-          .forEach((e) => {
-            const row = document.createElement("div");
-            row.className = "item-row";
-            row.innerHTML = `
-          <div class="item-left">
-            <div class="item-text">
-              <h5>${e.desc}</h5>
-              <p>${e.category} • ${e.date}</p>
-            </div>
-          </div>
-          <span style="font-weight:700; color:var(--text-main);">₹${e.amount}</span>
-        `;
-            listContainer.appendChild(row);
+          appState.reminders.forEach((r) => {
+            if (r.active && r.time === currentTime && now.getSeconds() === 0) {
+              triggerAlarm(r.title);
+            }
           });
+        }, 1000);
       }
 
-      function renderMoneyChart() {
-        const ctx = document.getElementById("expenseChart").getContext("2d");
-        const categories = [
-          "Food",
-          "Transport",
-          "Shopping",
-          "Education",
-          "Bills",
-        ];
-        const data = categories.map((cat) =>
-          state.expenses
-            .filter((e) => e.category === cat)
-            .reduce((s, e) => s + e.amount, 0),
-        );
-
-        if (chartInstance) chartInstance.destroy();
-        chartInstance = new Chart(ctx, {
-          type: "doughnut",
-          data: {
-            labels: categories,
-            datasets: [
-              {
-                data: data,
-                backgroundColor: [
-                  "#4CAF50",
-                  "#1976D2",
-                  "#D81B60",
-                  "#FFB74D",
-                  "#9C27B0",
-                ],
-              },
-            ],
-          },
-          options: { plugins: { legend: { position: "right" } } },
-        });
+      function triggerAlarm(title) {
+        document.getElementById("alarm-title").innerText = title;
+        document.getElementById("alarm-banner").style.display = "flex";
+        const sound = document.getElementById("alarm-sound");
+        sound.play().catch(() => console.log("Audio autoplay blocked"));
       }
 
-      function renderLifeView() {
-        const notesContainer = document.getElementById("notesContainer");
-        notesContainer.innerHTML = "";
-        state.notes.forEach((n) => {
-          const div = document.createElement("div");
-          div.style.marginBottom = "12px";
-          div.innerHTML = `<h5 style="font-size:0.85rem; font-weight:700;">${n.title} <span style="font-weight:400; color:var(--text-muted);">(${n.date})</span></h5><p style="font-size:0.8rem; color:var(--text-muted);">${n.content}</p>`;
-          notesContainer.appendChild(div);
-        });
-
-        const listContainer = document.getElementById("checklistsContainer");
-        listContainer.innerHTML = "";
-        state.checklists.forEach((c) => {
-          const div = document.createElement("div");
-          div.style.marginBottom = "12px";
-          div.innerHTML = `<h5 style="font-size:0.85rem; font-weight:700;">🛒 ${c.title}</h5>`;
-          listContainer.appendChild(div);
-        });
+      function stopAlarm() {
+        document.getElementById("alarm-banner").style.display = "none";
+        const sound = document.getElementById("alarm-sound");
+        sound.pause();
+        sound.currentTime = 0;
       }
 
-      function renderMiniCalendar() {
-        const grid = document.getElementById("miniCalendarGrid");
-        grid.innerHTML = "";
-        for (let i = 1; i <= 30; i++) {
-          const day = document.createElement("div");
-          day.className = `cal-day ${i === 18 ? "active" : ""}`;
-          day.innerText = i;
-          grid.appendChild(day);
+      function openModal(type) {
+        const modal = document.getElementById("action-modal");
+        const content = document.getElementById("modal-content");
+        modal.classList.add("active");
+
+        if (type === "quick") {
+          content.innerHTML = `
+          <div class="form-group"><label>Expense Title</label><input type="text" id="exp-title" class="form-control" placeholder="e.g. Snacks"></div>
+          <div class="form-group"><label>Amount (₹)</label><input type="number" id="exp-amt" class="form-control" placeholder="100"></div>
+          <button class="btn-primary" onclick="addExpense()">Add Expense</button>
+        `;
+        } else if (type === "reminder") {
+          content.innerHTML = `
+          <div class="form-group"><label>Reminder Title</label><input type="text" id="rem-title" class="form-control" placeholder="e.g. Drink Water"></div>
+          <div class="form-group"><label>Time</label><input type="time" id="rem-time" class="form-control"></div>
+          <button class="btn-primary" onclick="addReminder()">Set Alarm</button>
+        `;
         }
       }
 
-      function executeGlobalSearch(query) {
-        const res = document.getElementById("searchResultsList");
-        res.innerHTML = "";
-        if (!query.trim()) return;
-        const matches = state.routines.filter((r) =>
-          r.title.toLowerCase().includes(query.toLowerCase()),
-        );
-        matches.forEach((m) => {
-          res.innerHTML += `<div class="item-row"><div class="item-text"><h5>${m.title}</h5><p>Habit / Routine</p></div></div>`;
-        });
+      function closeModal() {
+        document.getElementById("action-modal").classList.remove("active");
       }
 
-      function exportDataBackup() {
-        const str =
-          "data:text/json;charset=utf-8," +
-          encodeURIComponent(JSON.stringify(state));
-        const a = document.createElement("a");
-        a.setAttribute("href", str);
-        a.setAttribute("download", `DayCore_Backup_${todayStr}.json`);
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
+      function addExpense() {
+        const title = document.getElementById("exp-title").value;
+        const amt = parseFloat(document.getElementById("exp-amt").value);
+        if (title && !isNaN(amt)) {
+          appState.expenses.push({ title, amt });
+          savePersistentData();
+          renderAll();
+          closeModal();
+        }
       }
 
-      // Initialize App
-      window.onload = loadState;
+      function addReminder() {
+        const title = document.getElementById("rem-title").value;
+        const time = document.getElementById("rem-time").value;
+        if (title && time) {
+          appState.reminders.push({
+            id: Date.now(),
+            title,
+            time,
+            active: true,
+          });
+          savePersistentData();
+          renderAll();
+          closeModal();
+        }
+      }
+
+      function setTheme(theme) {
+        document.documentElement.setAttribute("data-theme", theme);
+      }
+
+      init();
     </script>
   </body>
 </html>
