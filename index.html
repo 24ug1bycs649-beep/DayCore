@@ -363,6 +363,16 @@
       color: white; border: none; font-size: 1rem; cursor: pointer; transition: transform 0.15s ease;
     }
     .todo-add-btn:active { transform: scale(0.92); }
+
+    /* DAILY NOTE (Home page) */
+    .daily-note-card { padding: 0.9rem 1rem 1rem 1rem; }
+    .daily-note-input {
+      width: 100%; min-height: 68px; resize: vertical; border: 1px solid var(--border-color);
+      border-radius: 12px; padding: 0.7rem 0.85rem; font-size: 0.85rem; font-family: inherit;
+      background: var(--bg-primary); color: var(--text-main); outline: none; line-height: 1.4;
+    }
+    .daily-note-input:focus { border-color: var(--accent); }
+    .daily-note-input::placeholder { color: var(--text-muted); }
     
     .theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-bottom: 1rem; }
     .theme-chip { padding: 0.6rem; border-radius: 12px; text-align: center; font-size: 0.75rem; font-weight: 700; cursor: pointer; border: 2px solid transparent; background: var(--bg-secondary); }
@@ -539,6 +549,14 @@
           <span class="card-link" onclick="switchTab('routine')">See Routine</span>
         </div>
         <div id="home-tasks-container"></div>
+      </div>
+
+      <div class="card daily-note-card">
+        <div class="card-header">
+          <span class="card-title" style="font-size: 0.85rem;">📝 Daily Note</span>
+          <span class="save-toast" id="note-save-toast" style="margin: 0; font-size: 0.68rem;">Saved</span>
+        </div>
+        <textarea id="daily-note-input" class="daily-note-input" placeholder="Anything you want to remember about today?" oninput="autoSaveDailyNote()"></textarea>
       </div>
 
       <div class="quote-box">
@@ -1123,10 +1141,13 @@
 
     function getSelectedDateLog() {
       if (!appData.logsByDate[selectedDate]) {
-        appData.logsByDate[selectedDate] = { completedHabits: [], expenses: [], todos: [] };
+        appData.logsByDate[selectedDate] = { completedHabits: [], expenses: [], todos: [], notes: '' };
       }
       if (!appData.logsByDate[selectedDate].todos) {
         appData.logsByDate[selectedDate].todos = [];
+      }
+      if (appData.logsByDate[selectedDate].notes === undefined) {
+        appData.logsByDate[selectedDate].notes = '';
       }
       return appData.logsByDate[selectedDate];
     }
@@ -1262,6 +1283,7 @@
       renderReminders();
       renderMonthlyBudgetSummary();
       renderTodoList();
+      loadDailyNote();
     }
 
     // Picks one of 7 quotes based on the real-world day of week, so it repeats weekly
@@ -1320,6 +1342,31 @@
         playAudioTune('chime');
       }
       saveData();
+    }
+
+    // DAILY NOTE — freeform reflection/takeaway, one per date, auto-saved as you type
+    let noteSaveTimer = null;
+    function autoSaveDailyNote() {
+      const textarea = document.getElementById('daily-note-input');
+      const log = getSelectedDateLog();
+      log.notes = textarea.value;
+
+      clearTimeout(noteSaveTimer);
+      noteSaveTimer = setTimeout(() => {
+        saveData();
+        const toast = document.getElementById('note-save-toast');
+        if (toast) {
+          toast.classList.add('show');
+          setTimeout(() => toast.classList.remove('show'), 1200);
+        }
+      }, 500);
+    }
+
+    function loadDailyNote() {
+      const textarea = document.getElementById('daily-note-input');
+      if (!textarea) return;
+      const log = getSelectedDateLog();
+      textarea.value = log.notes || '';
     }
 
     // TO-DO LIST — freeform, per-date, unlike the fixed daily Habits/Goals list
