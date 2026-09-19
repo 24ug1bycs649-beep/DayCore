@@ -196,8 +196,9 @@
     .date-nav-btn:not(:disabled):hover { background: var(--bg-secondary); }
     .date-display-wrap { position: relative; flex: 1; display: flex; align-items: center; justify-content: center; min-width: 0; }
     .date-display-text {
-      font-size: 0.8rem; font-weight: 600; color: var(--text-main); opacity: 0.72;
-      white-space: nowrap; pointer-events: none; letter-spacing: 0.1px;
+      font-size: 0.86rem; font-weight: 700; color: var(--text-main);
+      white-space: nowrap; pointer-events: none; letter-spacing: 0.2px;
+      font-variant-numeric: tabular-nums;
     }
     .date-picker-input-hidden { position: absolute; inset: 0; opacity: 0; border: none; background: transparent; cursor: pointer; width: 100%; }
 
@@ -628,7 +629,7 @@
           <div class="card-header">
             <span class="card-title">To-Do List</span>
           </div>
-          <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: -0.5rem; margin-bottom: 0.9rem;">Jot down anything for this day — small or big, no fixed format.</p>
+          <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: -0.5rem; margin-bottom: 0.9rem;">Write down anything for this day — small or big, no fixed format.</p>
           <div class="todo-input-row">
             <input type="text" id="todo-input" class="form-input" placeholder="Write a task..." onkeydown="if(event.key==='Enter') addTodoItem();">
             <button class="todo-add-btn" onclick="addTodoItem()"><i class="fa-solid fa-plus"></i></button>
