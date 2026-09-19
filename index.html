@@ -353,6 +353,15 @@
       margin: -0.4rem 0 0.7rem 0; opacity: 0; transition: opacity 0.25s ease; height: 1em;
     }
     .save-toast.show { opacity: 1; }
+
+    /* TO-DO LIST */
+    .todo-input-row { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+    .todo-input-row .form-input { flex: 1; margin-bottom: 0; }
+    .todo-add-btn {
+      width: 44px; height: 44px; flex-shrink: 0; border-radius: 12px; background: var(--accent);
+      color: white; border: none; font-size: 1rem; cursor: pointer; transition: transform 0.15s ease;
+    }
+    .todo-add-btn:active { transform: scale(0.92); }
     
     .theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-bottom: 1rem; }
     .theme-chip { padding: 0.6rem; border-radius: 12px; text-align: center; font-size: 0.75rem; font-weight: 700; cursor: pointer; border: 2px solid transparent; background: var(--bg-secondary); }
@@ -600,6 +609,7 @@
     <div id="view-routine" class="app-view">
       <div class="sub-tabs">
         <div class="sub-tab active" onclick="switchRoutineSubTab('today', this)">Selected Day</div>
+        <div class="sub-tab" onclick="switchRoutineSubTab('todo', this)">To-Do</div>
         <div class="sub-tab" onclick="switchRoutineSubTab('week', this)">This Week</div>
         <div class="sub-tab" onclick="switchRoutineSubTab('habits', this)">Habits Library</div>
       </div>
@@ -609,6 +619,21 @@
         <div class="card">
           <div id="routine-items-container"></div>
           <button class="btn-primary" style="margin-top: 1rem; font-size: 0.9rem; padding: 0.75rem;" onclick="openModal('habit')">+ Add Habit or Goal</button>
+        </div>
+      </div>
+
+      <!-- TO-DO SUB-TAB -->
+      <div id="routine-sub-todo" style="display: none;">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">To-Do List</span>
+          </div>
+          <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: -0.5rem; margin-bottom: 0.9rem;">Jot down anything for this day — small or big, no fixed format.</p>
+          <div class="todo-input-row">
+            <input type="text" id="todo-input" class="form-input" placeholder="Write a task..." onkeydown="if(event.key==='Enter') addTodoItem();">
+            <button class="todo-add-btn" onclick="addTodoItem()"><i class="fa-solid fa-plus"></i></button>
+          </div>
+          <div id="todo-list-container"></div>
         </div>
       </div>
 
@@ -876,6 +901,52 @@
             osc.start(now + i * 0.18);
             osc.stop(now + i * 0.18 + 0.12);
           }
+        } else if (tuneType === 'alarm') {
+          // Urgent triple-beep, loud square wave — classic digital alarm clock feel
+          for (let i = 0; i < 3; i++) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(1000, now + i * 0.22);
+            gain.gain.setValueAtTime(0.4, now + i * 0.22);
+            gain.gain.setValueAtTime(0.4, now + i * 0.22 + 0.12);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.22 + 0.18);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(now + i * 0.22);
+            osc.stop(now + i * 0.22 + 0.18);
+          }
+        } else if (tuneType === 'siren') {
+          // Rising-falling wail, loud sawtooth — hard to sleep through
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(500, now);
+          osc.frequency.linearRampToValueAtTime(1000, now + 0.4);
+          osc.frequency.linearRampToValueAtTime(500, now + 0.8);
+          gain.gain.setValueAtTime(0.35, now);
+          gain.gain.setValueAtTime(0.35, now + 0.8);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.9);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(now);
+          osc.stop(now + 0.9);
+        } else if (tuneType === 'bell') {
+          // Deep layered bell peal — two strikes, each with three detuned tones for a metallic ring
+          [0, 0.35].forEach(delay => {
+            [440, 445, 880].forEach(f => {
+              const osc = audioCtx.createOscillator();
+              const gain = audioCtx.createGain();
+              osc.type = 'sine';
+              osc.frequency.setValueAtTime(f, now + delay);
+              gain.gain.setValueAtTime(0.28, now + delay);
+              gain.gain.exponentialRampToValueAtTime(0.001, now + delay + 1.0);
+              osc.connect(gain);
+              gain.connect(audioCtx.destination);
+              osc.start(now + delay);
+              osc.stop(now + delay + 1.0);
+            });
+          });
         } else {
           playAudioTune('chime');
         }
@@ -1051,7 +1122,10 @@
 
     function getSelectedDateLog() {
       if (!appData.logsByDate[selectedDate]) {
-        appData.logsByDate[selectedDate] = { completedHabits: [], expenses: [] };
+        appData.logsByDate[selectedDate] = { completedHabits: [], expenses: [], todos: [] };
+      }
+      if (!appData.logsByDate[selectedDate].todos) {
+        appData.logsByDate[selectedDate].todos = [];
       }
       return appData.logsByDate[selectedDate];
     }
@@ -1111,10 +1185,12 @@
       el.classList.add('active');
 
       document.getElementById('routine-sub-today').style.display = sub === 'today' ? 'block' : 'none';
+      document.getElementById('routine-sub-todo').style.display = sub === 'todo' ? 'block' : 'none';
       document.getElementById('routine-sub-week').style.display = sub === 'week' ? 'block' : 'none';
       document.getElementById('routine-sub-habits').style.display = sub === 'habits' ? 'block' : 'none';
 
       if (sub === 'week') renderWeeklyHeatmap();
+      if (sub === 'todo') renderTodoList();
       if (sub === 'habits') renderHabitsLibrary();
     }
 
@@ -1184,6 +1260,7 @@
       renderExpensesForSelectedDate();
       renderReminders();
       renderMonthlyBudgetSummary();
+      renderTodoList();
     }
 
     // Picks one of 7 quotes based on the real-world day of week, so it repeats weekly
@@ -1242,6 +1319,58 @@
         playAudioTune('chime');
       }
       saveData();
+    }
+
+    // TO-DO LIST — freeform, per-date, unlike the fixed daily Habits/Goals list
+    function addTodoItem() {
+      const input = document.getElementById('todo-input');
+      const text = input.value.trim();
+      if (!text) return;
+      const log = getSelectedDateLog();
+      log.todos.push({ id: Date.now(), text, done: false });
+      input.value = '';
+      saveData();
+      renderTodoList();
+    }
+
+    function toggleTodoItem(id) {
+      const log = getSelectedDateLog();
+      const item = log.todos.find(t => t.id === id);
+      if (item) item.done = !item.done;
+      saveData();
+      renderTodoList();
+    }
+
+    function deleteTodoItem(id) {
+      const log = getSelectedDateLog();
+      log.todos = log.todos.filter(t => t.id !== id);
+      saveData();
+      renderTodoList();
+    }
+
+    function renderTodoList() {
+      const box = document.getElementById('todo-list-container');
+      if (!box) return;
+      const log = getSelectedDateLog();
+
+      if (!log.todos.length) {
+        box.innerHTML = `<div style="text-align:center; padding:1.5rem 0; color:var(--text-muted); font-size:0.85rem;">Nothing on your list for this day yet.</div>`;
+        return;
+      }
+
+      // Undone items float to the top; done items sink but stay visible (struck through)
+      const sorted = [...log.todos].sort((a, b) => a.done - b.done);
+      box.innerHTML = sorted.map(t => `
+        <div class="task-item">
+          <div class="task-left">
+            <div class="task-check ${t.done ? 'checked' : ''}" onclick="toggleTodoItem(${t.id})">
+              ${t.done ? '<i class="fa-solid fa-check" style="font-size:0.6rem;"></i>' : ''}
+            </div>
+            <div class="task-title ${t.done ? 'completed' : ''}" style="font-weight: 600;">${t.text}</div>
+          </div>
+          <i class="fa-solid fa-trash action-icon" onclick="deleteTodoItem(${t.id})" title="Delete"></i>
+        </div>
+      `).join('');
     }
 
     function renderHabitsForSelectedDate() {
@@ -1421,7 +1550,10 @@
         'beep': '🔔 Digital Beep',
         'chime': '🎶 Soft Chime',
         'arpeggio': '🌅 Sunrise Melody',
-        'radar': '⚡ Radar Buzz'
+        'radar': '⚡ Radar Buzz',
+        'alarm': '🚨 Alarm Clock (Loud)',
+        'siren': '📢 Siren Wail (Loud)',
+        'bell': '🔔 Deep Bell (Loud)'
       };
 
       if (appData.reminders.length === 0) {
@@ -1555,15 +1687,30 @@
       }, 1000);
     }
 
+    let activeAlarmLoop = null;
+
     function triggerAlarmAlert(title, desc, tune) {
-      playAudioTune(tune || 'chime');
+      const chosenTune = tune || 'chime';
+      playAudioTune(chosenTune);
       document.getElementById('alarm-title').innerText = title;
       document.getElementById('alarm-desc').innerText = desc;
       document.getElementById('alarm-banner').style.display = 'flex';
+
+      if (navigator.vibrate) navigator.vibrate([250, 120, 250, 120, 400]);
+
+      // Keep insisting — real alarms don't ring once and give up. Repeats until dismissed.
+      clearInterval(activeAlarmLoop);
+      activeAlarmLoop = setInterval(() => {
+        playAudioTune(chosenTune);
+        if (navigator.vibrate) navigator.vibrate([250, 120, 250, 120, 400]);
+      }, 2200);
     }
 
     function dismissAlarm() {
       document.getElementById('alarm-banner').style.display = 'none';
+      clearInterval(activeAlarmLoop);
+      activeAlarmLoop = null;
+      if (navigator.vibrate) navigator.vibrate(0);
     }
 
     // MODAL DIALOG ENGINE
@@ -1655,6 +1802,9 @@
               <option value="beep">🔔 Digital Beep</option>
               <option value="arpeggio">🌅 Sunrise Melody</option>
               <option value="radar">⚡ Energetic Radar Buzz</option>
+              <option value="alarm">🚨 Alarm Clock (Loud)</option>
+              <option value="siren">📢 Siren Wail (Loud)</option>
+              <option value="bell">🔔 Deep Bell (Loud)</option>
             </select>
           </div>
           <button class="btn-primary" onclick="saveReminderModal()">Set Daily Alarm</button>
