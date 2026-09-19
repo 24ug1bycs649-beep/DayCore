@@ -478,7 +478,7 @@
     </div>
 
     <!-- HISTORICAL DATE NAVIGATOR (PAST ONLY STRICT CONTROLS) -->
-    <div class="date-nav-bar">
+    <div class="date-nav-bar" id="global-date-nav">
       <button class="date-nav-btn" onclick="shiftSelectedDate(-1)"><i class="fa-solid fa-chevron-left"></i> Prev</button>
       <div class="date-display-wrap">
         <span class="date-display-text" id="date-display-text">Today</span>
@@ -1098,6 +1098,9 @@
 
       const navBtn = document.getElementById(`btn-nav-${tabId}`);
       if (navBtn) navBtn.classList.add('active');
+
+      // Date navigation is meaningless on the Profile/Settings screen — hide it there
+      document.getElementById('global-date-nav').style.display = (tabId === 'profile') ? 'none' : 'flex';
 
       if (tabId === 'finance') setTimeout(renderFinanceChart, 100);
       if (tabId === 'routine') renderWeeklyHeatmap();
