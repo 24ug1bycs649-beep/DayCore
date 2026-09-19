@@ -190,7 +190,7 @@
     }
     .date-nav-btn {
       background: none; border: none; color: var(--accent); font-weight: 700;
-      padding: 0.4rem 0.6rem; cursor: pointer; font-size: 0.85rem; border-radius: 10px; transition: opacity 0.2s;
+      padding: 0.4rem 0.45rem; cursor: pointer; font-size: 0.85rem; border-radius: 10px; transition: opacity 0.2s;
     }
     .date-nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
     .date-nav-btn:not(:disabled):hover { background: var(--bg-secondary); }
@@ -992,10 +992,21 @@
       return `${day}${suffix} ${months[month - 1]} ${year}`;
     }
 
+    // Compact version for tight spaces (the date nav bar) — abbreviated month, same ordinal day
+    function formatOrdinalDateShort(dateStr) {
+      const [year, month, day] = dateStr.split('-').map(Number);
+      const monthsShort = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      const j = day % 10, k = day % 100;
+      let suffix = 'th';
+      if (j === 1 && k !== 11) suffix = 'st';
+      else if (j === 2 && k !== 12) suffix = 'nd';
+      else if (j === 3 && k !== 13) suffix = 'rd';
+      return `${day}${suffix} ${monthsShort[month - 1]} ${year}`;
+    }
+
     function syncDatePickerDisplay() {
       document.getElementById('date-picker').value = selectedDate;
-      document.getElementById('date-display-text').innerText =
-        selectedDate === getSystemTodayString() ? `Today, ${formatOrdinalDate(selectedDate)}` : formatOrdinalDate(selectedDate);
+      document.getElementById('date-display-text').innerText = formatOrdinalDateShort(selectedDate);
     }
 
     // STRICT PAST-ONLY DATE NAVIGATION (1 DAY STEP AT A TIME)
