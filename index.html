@@ -373,6 +373,25 @@
     }
     .daily-note-input:focus { border-color: var(--accent); }
     .daily-note-input::placeholder { color: var(--text-muted); }
+
+    /* DAY TIMELINE */
+    .timeline-quick-add { background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 14px; padding: 0.8rem; margin-bottom: 1rem; }
+    .timeline-row { display: flex; gap: 0.6rem; margin-bottom: 0.6rem; }
+    .timeline-field { flex: 1; min-width: 0; }
+    .timeline-field label { display: block; font-size: 0.68rem; color: var(--text-muted); font-weight: 700; margin-bottom: 0.2rem; }
+    .timeline-field .form-input, .timeline-field .form-select { padding: 0.55rem 0.6rem; font-size: 0.82rem; }
+
+    .timeline-list { position: relative; padding-left: 1.4rem; }
+    .timeline-list::before { content: ''; position: absolute; left: 5px; top: 6px; bottom: 6px; width: 2px; background: var(--border-color); }
+    .timeline-entry { position: relative; padding-bottom: 1.1rem; }
+    .timeline-entry:last-child { padding-bottom: 0; }
+    .timeline-dot { position: absolute; left: -1.4rem; top: 3px; width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--bg-card); box-shadow: 0 0 0 1px rgba(0,0,0,0.08); }
+    .timeline-content { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.5rem; }
+    .timeline-time { font-size: 0.78rem; font-weight: 800; color: var(--text-main); font-variant-numeric: tabular-nums; }
+    .timeline-label { font-size: 0.84rem; color: var(--text-main); margin-top: 1px; }
+    .timeline-cat-tag { display: inline-block; font-size: 0.68rem; font-weight: 700; padding: 0.1rem 0.45rem; border-radius: 8px; margin-top: 3px; }
+    .timeline-delete { font-size: 0.78rem; color: var(--text-muted); cursor: pointer; padding: 0.3rem; flex-shrink: 0; }
+    .timeline-delete:hover { color: var(--accent-pink); }
     
     .theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-bottom: 1rem; }
     .theme-chip { padding: 0.6rem; border-radius: 12px; text-align: center; font-size: 0.75rem; font-weight: 700; cursor: pointer; border: 2px solid transparent; background: var(--bg-secondary); }
@@ -629,6 +648,7 @@
       <div class="sub-tabs">
         <div class="sub-tab active" onclick="switchRoutineSubTab('today', this)">Selected Day</div>
         <div class="sub-tab" onclick="switchRoutineSubTab('todo', this)">To-Do</div>
+        <div class="sub-tab" onclick="switchRoutineSubTab('timeline', this)">Timeline</div>
         <div class="sub-tab" onclick="switchRoutineSubTab('week', this)">This Week</div>
         <div class="sub-tab" onclick="switchRoutineSubTab('habits', this)">Habits Library</div>
       </div>
@@ -653,6 +673,48 @@
             <button class="todo-add-btn" onclick="addTodoItem()"><i class="fa-solid fa-plus"></i></button>
           </div>
           <div id="todo-list-container"></div>
+        </div>
+      </div>
+
+      <!-- DAY TIMELINE SUB-TAB -->
+      <div id="routine-sub-timeline" style="display: none;">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Day Timeline</span>
+          </div>
+          <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: -0.5rem; margin-bottom: 0.9rem;">Log what you actually did, hour by hour.</p>
+
+          <div class="timeline-quick-add">
+            <div class="timeline-row">
+              <div class="timeline-field">
+                <label>Start</label>
+                <input type="time" id="tl-start" class="form-input">
+              </div>
+              <div class="timeline-field">
+                <label>End (optional)</label>
+                <input type="time" id="tl-end" class="form-input">
+              </div>
+            </div>
+            <div class="timeline-row">
+              <div class="timeline-field" style="flex: 0 0 auto; width: 110px;">
+                <label>Category</label>
+                <select id="tl-category" class="form-select" onchange="toggleCustomCategoryField()"></select>
+              </div>
+              <div class="timeline-field">
+                <label>What did you do?</label>
+                <input type="text" id="tl-label" class="form-input" placeholder="e.g. Attended lab and lectures" onkeydown="if(event.key==='Enter') addTimelineBlock();">
+              </div>
+            </div>
+            <div class="timeline-row" id="tl-custom-category-row" style="display: none;">
+              <div class="timeline-field">
+                <label>Name this category</label>
+                <input type="text" id="tl-custom-category" class="form-input" placeholder="e.g. Chores, Reading, Family time">
+              </div>
+            </div>
+            <button class="btn-primary" style="font-size: 0.85rem; padding: 0.7rem;" onclick="addTimelineBlock()">+ Add to Timeline</button>
+          </div>
+
+          <div id="timeline-list-container"></div>
         </div>
       </div>
 
@@ -800,6 +862,19 @@
       { id: 'fa-palette', name: 'Artist' },
       { id: 'fa-bolt', name: 'Bolt' },
       { id: 'fa-crown', name: 'Crown' }
+    ];
+
+    // DAY TIMELINE CATEGORIES — fixed colors regardless of active theme, so the
+    // timeline strip stays a consistent, readable reference no matter what theme is on
+    const TIMELINE_CATEGORIES = [
+      { id: 'sleep', name: 'Sleep', emoji: '🌙', color: '#6366F1' },
+      { id: 'college', name: 'College', emoji: '🎓', color: '#0284C7' },
+      { id: 'study', name: 'Study/DSA', emoji: '📚', color: '#7C3AED' },
+      { id: 'gym', name: 'Gym', emoji: '💪', color: '#EA580C' },
+      { id: 'food', name: 'Food', emoji: '🍽️', color: '#16A34A' },
+      { id: 'social', name: 'Social', emoji: '🗣️', color: '#DB2777' },
+      { id: 'screen', name: 'Screen Time', emoji: '📱', color: '#64748B' },
+      { id: 'other', name: 'Other', emoji: '✨', color: '#9CA3AF' }
     ];
 
     // THEME PRESETS — grouped by visual vibe, not gender, so anyone picks by look/mood
@@ -1141,13 +1216,16 @@
 
     function getSelectedDateLog() {
       if (!appData.logsByDate[selectedDate]) {
-        appData.logsByDate[selectedDate] = { completedHabits: [], expenses: [], todos: [], notes: '' };
+        appData.logsByDate[selectedDate] = { completedHabits: [], expenses: [], todos: [], notes: '', timeline: [] };
       }
       if (!appData.logsByDate[selectedDate].todos) {
         appData.logsByDate[selectedDate].todos = [];
       }
       if (appData.logsByDate[selectedDate].notes === undefined) {
         appData.logsByDate[selectedDate].notes = '';
+      }
+      if (!appData.logsByDate[selectedDate].timeline) {
+        appData.logsByDate[selectedDate].timeline = [];
       }
       return appData.logsByDate[selectedDate];
     }
@@ -1208,11 +1286,13 @@
 
       document.getElementById('routine-sub-today').style.display = sub === 'today' ? 'block' : 'none';
       document.getElementById('routine-sub-todo').style.display = sub === 'todo' ? 'block' : 'none';
+      document.getElementById('routine-sub-timeline').style.display = sub === 'timeline' ? 'block' : 'none';
       document.getElementById('routine-sub-week').style.display = sub === 'week' ? 'block' : 'none';
       document.getElementById('routine-sub-habits').style.display = sub === 'habits' ? 'block' : 'none';
 
       if (sub === 'week') renderWeeklyHeatmap();
       if (sub === 'todo') renderTodoList();
+      if (sub === 'timeline') renderTimelineList();
       if (sub === 'habits') renderHabitsLibrary();
     }
 
@@ -1284,6 +1364,7 @@
       renderMonthlyBudgetSummary();
       renderTodoList();
       loadDailyNote();
+      renderTimelineList();
     }
 
     // Picks one of 7 quotes based on the real-world day of week, so it repeats weekly
@@ -1367,6 +1448,85 @@
       if (!textarea) return;
       const log = getSelectedDateLog();
       textarea.value = log.notes || '';
+    }
+
+    // DAY TIMELINE — logs what actually happened, hour by hour, per date
+    function populateTimelineCategorySelect() {
+      const select = document.getElementById('tl-category');
+      if (!select || select.options.length) return; // populate once, it's a fixed list
+      select.innerHTML = TIMELINE_CATEGORIES.map(c => `<option value="${c.id}">${c.emoji} ${c.name}</option>`).join('');
+    }
+
+    function toggleCustomCategoryField() {
+      const isOther = document.getElementById('tl-category').value === 'other';
+      document.getElementById('tl-custom-category-row').style.display = isOther ? 'flex' : 'none';
+    }
+
+    function addTimelineBlock() {
+      const start = document.getElementById('tl-start').value;
+      let end = document.getElementById('tl-end').value;
+      const category = document.getElementById('tl-category').value || 'other';
+      const label = document.getElementById('tl-label').value.trim();
+      const customCategory = category === 'other' ? document.getElementById('tl-custom-category').value.trim() : '';
+
+      if (!start || !label) return;
+
+      const log = getSelectedDateLog();
+
+      // Auto-close the most recent open-ended block (no end time) that started before this one
+      if (!end) {
+        const openBlocks = log.timeline.filter(b => !b.end && b.start < start).sort((a, b) => a.start < b.start ? 1 : -1);
+        if (openBlocks.length) openBlocks[0].end = start;
+      }
+
+      log.timeline.push({ id: Date.now(), start, end: end || null, category, customCategory: customCategory || null, label });
+      saveData();
+
+      document.getElementById('tl-start').value = '';
+      document.getElementById('tl-end').value = '';
+      document.getElementById('tl-label').value = '';
+      document.getElementById('tl-custom-category').value = '';
+      document.getElementById('tl-custom-category-row').style.display = 'none';
+      renderTimelineList();
+    }
+
+    function deleteTimelineBlock(id) {
+      const log = getSelectedDateLog();
+      log.timeline = log.timeline.filter(b => b.id !== id);
+      saveData();
+      renderTimelineList();
+    }
+
+    function renderTimelineList() {
+      populateTimelineCategorySelect();
+      const box = document.getElementById('timeline-list-container');
+      if (!box) return;
+      const log = getSelectedDateLog();
+
+      if (!log.timeline.length) {
+        box.innerHTML = `<div style="text-align:center; padding:1.5rem 0; color:var(--text-muted); font-size:0.85rem;">No blocks logged for this day yet.</div>`;
+        return;
+      }
+
+      const sorted = [...log.timeline].sort((a, b) => a.start < b.start ? -1 : 1);
+      box.innerHTML = `<div class="timeline-list">` + sorted.map(b => {
+        const cat = TIMELINE_CATEGORIES.find(c => c.id === b.category) || TIMELINE_CATEGORIES[TIMELINE_CATEGORIES.length - 1];
+        const catDisplayName = b.customCategory || cat.name;
+        const timeRange = b.end ? `${formatTime12(b.start)} – ${formatTime12(b.end)}` : `${formatTime12(b.start)} →`;
+        return `
+          <div class="timeline-entry">
+            <div class="timeline-dot" style="background:${cat.color};"></div>
+            <div class="timeline-content">
+              <div>
+                <div class="timeline-time">${timeRange}</div>
+                <div class="timeline-label">${b.label}</div>
+                <span class="timeline-cat-tag" style="background:${cat.color}22; color:${cat.color};">${cat.emoji} ${catDisplayName}</span>
+              </div>
+              <i class="fa-solid fa-trash timeline-delete" onclick="deleteTimelineBlock(${b.id})"></i>
+            </div>
+          </div>
+        `;
+      }).join('') + `</div>`;
     }
 
     // TO-DO LIST — freeform, per-date, unlike the fixed daily Habits/Goals list
