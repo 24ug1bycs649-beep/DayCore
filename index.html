@@ -11,7 +11,7 @@
   <meta name="apple-mobile-web-app-title" content="DayCore">
   <meta name="theme-color" content="#FFF8F6">
   <meta name="mobile-web-app-capable" content="yes">
-  <meta name="description" content="Small steps. A better you. — habits, goals, finance and reminders in one place.">
+  <meta name="description" content="Small steps. A better you. — habits, goals, finance and daily reflection in one place.">
   <link rel="manifest" href="./manifest.json">
   <link rel="icon" href="./icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="./icon-192.png">
@@ -294,15 +294,6 @@
     .nav-add { width: 48px; height: 48px; background: var(--accent); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; margin-top: -22px; box-shadow: 0 6px 16px rgba(0,0,0,0.25); cursor: pointer; transition: transform 0.15s; }
     .nav-add:active { transform: scale(0.92); }
 
-    /* ALARM BANNER POPUP */
-    .alarm-banner {
-      position: fixed; top: 1rem; left: 1rem; right: 1rem; max-width: 400px; margin: 0 auto;
-      background: var(--accent); color: white; padding: 1rem 1.2rem; border-radius: 18px;
-      display: none; justify-content: space-between; align-items: center; z-index: 9999; box-shadow: 0 12px 30px rgba(0,0,0,0.35);
-      animation: bounceIn 0.3s ease;
-    }
-    @keyframes bounceIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-
     /* MODAL SHEET */
     .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.45); backdrop-filter: blur(2px); display: none; align-items: flex-end; justify-content: center; z-index: 200; }
     .modal-bg.active { display: flex; }
@@ -399,18 +390,6 @@
   </style>
 </head>
 <body>
-
-  <!-- ALARM POPUP BANNER -->
-  <div id="alarm-banner" class="alarm-banner">
-    <div>
-      <div style="font-size: 0.7rem; opacity: 0.85; font-weight: 700; text-transform: uppercase;">⏰ DayCore Reminder</div>
-      <strong id="alarm-title" style="font-size: 1.05rem; display: block; margin-top: 2px;">Drink Water 💧</strong>
-      <p style="font-size: 0.78rem; opacity: 0.9;" id="alarm-desc">It's time for your scheduled habit!</p>
-    </div>
-    <div style="display:flex; gap:0.4rem;">
-      <button onclick="dismissAlarm()" style="background: white; color: var(--accent); border: none; padding: 0.5rem 0.8rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.8rem;">Dismiss</button>
-    </div>
-  </div>
 
   <!-- CLEAN LANDING SCREEN -->
   <div id="onboarding-screen">
@@ -739,17 +718,6 @@
       </div>
     </div>
 
-    <!-- 4. REMINDERS VIEW -->
-    <div id="view-reminders" class="app-view">
-      <div class="card">
-        <div class="card-header">
-          <span class="card-title">Alarms & Reminders</span>
-          <span class="card-link" onclick="openModal('reminder')">+ Add Alarm</span>
-        </div>
-        <div id="reminders-container"></div>
-      </div>
-    </div>
-
     <!-- 5. PROFILE & AVATAR VIEW -->
     <div id="view-profile" class="app-view">
       <div class="card">
@@ -833,10 +801,6 @@
       <i class="fa-solid fa-calendar-check"></i>
       <span>Routine</span>
     </button>
-    <button class="nav-btn" id="btn-nav-reminders" onclick="switchTab('reminders')">
-      <i class="fa-solid fa-bell"></i>
-      <span>Reminders</span>
-    </button>
   </nav>
 
   <!-- MODAL CONTAINER -->
@@ -916,11 +880,7 @@
         { id: 104, title: 'No Fap', type: 'habit', time: 'All day', alarmTime: '', icon: 'fa-spa', bg: '#FCE7F3', required: false },
         { id: 105, title: 'Read a book', type: 'goal', time: '20 minutes', alarmTime: '21:00', icon: 'fa-book', bg: '#E0E7FF', required: false }
       ],
-      logsByDate: {},
-      reminders: [
-        { id: 301, title: 'Drink Water 💧', time: '14:00', tune: 'chime', active: true },
-        { id: 302, title: 'DSA Practice 📚', time: '19:00', tune: 'arpeggio', active: true }
-      ]
+      logsByDate: {}
     };
 
     let appData = null;
@@ -1093,8 +1053,6 @@
 
       applyTheme(appData.profile.theme || 'blush');
 
-      startAlarmChecker();
-      requestNotifyPermission();
       document.body.addEventListener('click', () => { initAudioContext(); }, { once: true });
     }
 
@@ -1360,7 +1318,6 @@
       renderDailyQuote();
       renderHabitsForSelectedDate();
       renderExpensesForSelectedDate();
-      renderReminders();
       renderMonthlyBudgetSummary();
       renderTodoList();
       loadDailyNote();
@@ -1751,47 +1708,7 @@
       saveData();
     }
 
-    function renderReminders() {
-      const box = document.getElementById('reminders-container');
-      box.innerHTML = '';
-      const tuneLabels = {
-        'beep': '🔔 Digital Beep',
-        'chime': '🎶 Soft Chime',
-        'arpeggio': '🌅 Sunrise Melody',
-        'radar': '⚡ Radar Buzz',
-        'alarm': '🚨 Alarm Clock (Loud)',
-        'siren': '📢 Siren Wail (Loud)',
-        'bell': '🔔 Deep Bell (Loud)'
-      };
-
-      if (appData.reminders.length === 0) {
-        box.innerHTML = `<div style="text-align:center; padding:1.5rem 0; color:var(--text-muted); font-size:0.85rem;">No alarms set yet.</div>`;
-        return;
-      }
-
-      appData.reminders.forEach(r => {
-        const div = document.createElement('div');
-        div.className = 'reminder-item';
-        div.innerHTML = `
-          <div class="reminder-info">
-            <div class="reminder-icon"><i class="fa-solid fa-bell"></i></div>
-            <div class="reminder-text">
-              <div class="reminder-title">${r.title}</div>
-              <div class="reminder-meta">${tuneLabels[r.tune || 'chime']} • Daily</div>
-            </div>
-          </div>
-          <div class="reminder-actions">
-            <button class="reminder-test-btn" onclick="playAudioTune('${r.tune || 'chime'}')" title="Preview tone"><i class="fa-solid fa-play"></i></button>
-            <span class="reminder-time">${formatTime12(r.time)}</span>
-            <i class="fa-solid fa-trash reminder-delete" onclick="deleteReminder(${r.id})"></i>
-          </div>
-        `;
-        box.appendChild(div);
-      });
-    }
-
-    // Converts a 24-hour "HH:MM" string to a 12-hour "h:mm AM/PM" display string.
-    // Internal storage/comparison logic (alarm checker, sorting) stays in 24-hour format untouched.
+    // Converts a 24-hour "HH:MM" string to a 12-hour "h:mm AM/PM" display string. Used by Day Timeline.
     function formatTime12(timeStr) {
       if (!timeStr || !timeStr.includes(':')) return timeStr || '';
       const [hStr, mStr] = timeStr.split(':');
@@ -1801,11 +1718,6 @@
       h = h % 12;
       if (h === 0) h = 12;
       return `${h}:${m} ${period}`;
-    }
-
-    function deleteReminder(id) {
-      appData.reminders = appData.reminders.filter(r => r.id !== id);
-      saveData();
     }
 
     // CHART GENERATION
@@ -1879,48 +1791,6 @@
       }
     }
 
-    // ALARM CHECKER ENGINE
-    function startAlarmChecker() {
-      setInterval(() => {
-        const now = new Date();
-        const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-        
-        if (now.getSeconds() === 0) {
-          appData.reminders.forEach(r => {
-            if (r.active && r.time === timeStr) {
-              triggerAlarmAlert(r.title, "Scheduled Alarm Time!", r.tune || 'chime');
-            }
-          });
-        }
-      }, 1000);
-    }
-
-    let activeAlarmLoop = null;
-
-    function triggerAlarmAlert(title, desc, tune) {
-      const chosenTune = tune || 'chime';
-      playAudioTune(chosenTune);
-      document.getElementById('alarm-title').innerText = title;
-      document.getElementById('alarm-desc').innerText = desc;
-      document.getElementById('alarm-banner').style.display = 'flex';
-
-      if (navigator.vibrate) navigator.vibrate([250, 120, 250, 120, 400]);
-
-      // Keep insisting — real alarms don't ring once and give up. Repeats until dismissed.
-      clearInterval(activeAlarmLoop);
-      activeAlarmLoop = setInterval(() => {
-        playAudioTune(chosenTune);
-        if (navigator.vibrate) navigator.vibrate([250, 120, 250, 120, 400]);
-      }, 2200);
-    }
-
-    function dismissAlarm() {
-      document.getElementById('alarm-banner').style.display = 'none';
-      clearInterval(activeAlarmLoop);
-      activeAlarmLoop = null;
-      if (navigator.vibrate) navigator.vibrate(0);
-    }
-
     // MODAL DIALOG ENGINE
     function openModal(type) {
       editingItemId = null;
@@ -1932,8 +1802,7 @@
         body.innerHTML = `
           <div class="form-group"><label>Choose entry to add:</label></div>
           <button class="btn-primary" style="margin-bottom:0.6rem;" onclick="openModal('habit')">+ New Habit / Goal</button>
-          <button class="btn-primary" style="background:var(--accent-hover); margin-bottom:0.6rem;" onclick="openModal('expense')">+ New Expense Log</button>
-          <button class="btn-primary" style="background:var(--accent-pink);" onclick="openModal('reminder')">+ Set Daily Alarm</button>
+          <button class="btn-primary" style="background:var(--accent-hover);" onclick="openModal('expense')">+ New Expense Log</button>
         `;
       } else if (type === 'avatar') {
         document.getElementById('modal-heading').innerText = "Choose Avatar Icon";
@@ -1991,31 +1860,6 @@
             </select>
           </div>
           <button class="btn-primary" onclick="saveExpenseModal()">Record Expense</button>
-        `;
-      } else if (type === 'reminder') {
-        document.getElementById('modal-heading').innerText = "Add Daily Alarm";
-        body.innerHTML = `
-          <div class="form-group">
-            <label>Reminder Title</label>
-            <input type="text" id="m-rem-title" class="form-input" placeholder="e.g. Drink Water 💧">
-          </div>
-          <div class="form-group">
-            <label>Alarm Time</label>
-            <input type="time" id="m-rem-time" class="form-input">
-          </div>
-          <div class="form-group">
-            <label>Ringtone Sound Effect</label>
-            <select id="m-rem-tune" class="form-select" onchange="playAudioTune(this.value)">
-              <option value="chime">🎶 Soft Chime / Chord</option>
-              <option value="beep">🔔 Digital Beep</option>
-              <option value="arpeggio">🌅 Sunrise Melody</option>
-              <option value="radar">⚡ Energetic Radar Buzz</option>
-              <option value="alarm">🚨 Alarm Clock (Loud)</option>
-              <option value="siren">📢 Siren Wail (Loud)</option>
-              <option value="bell">🔔 Deep Bell (Loud)</option>
-            </select>
-          </div>
-          <button class="btn-primary" onclick="saveReminderModal()">Set Daily Alarm</button>
         `;
       }
     }
@@ -2112,18 +1956,6 @@
       if (title && amt) {
         const log = getSelectedDateLog();
         log.expenses.unshift({ id: Date.now(), title, amt, category });
-        saveData();
-        closeModal();
-      }
-    }
-
-    function saveReminderModal() {
-      const title = document.getElementById('m-rem-title').value.trim();
-      const time = document.getElementById('m-rem-time').value;
-      const tune = document.getElementById('m-rem-tune').value || 'chime';
-
-      if (title && time) {
-        appData.reminders.push({ id: Date.now(), title, time, tune, active: true });
         saveData();
         closeModal();
       }
