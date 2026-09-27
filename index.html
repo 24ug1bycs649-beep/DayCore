@@ -383,6 +383,28 @@
     .timeline-cat-tag { display: inline-block; font-size: 0.68rem; font-weight: 700; padding: 0.1rem 0.45rem; border-radius: 8px; margin-top: 3px; }
     .timeline-delete { font-size: 0.78rem; color: var(--text-muted); cursor: pointer; padding: 0.3rem; flex-shrink: 0; }
     .timeline-delete:hover { color: var(--accent-pink); }
+
+    /* FOCUS TIMER */
+    .focus-ring-wrap { position: relative; width: 220px; height: 220px; margin: 1rem auto 1.4rem auto; }
+    .focus-ring-svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+    .focus-ring-track { fill: none; stroke: var(--bg-secondary); stroke-width: 12; }
+    .focus-ring-progress {
+      fill: none; stroke: var(--accent); stroke-width: 12; stroke-linecap: round;
+      stroke-dasharray: 553; stroke-dashoffset: 0; transition: stroke-dashoffset 1s linear;
+    }
+    .focus-time-text {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      font-size: 2.1rem; font-weight: 800; color: var(--text-main); font-variant-numeric: tabular-nums;
+    }
+    .focus-phase-label { font-size: 0.85rem; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px; }
+    .focus-controls { display: flex; justify-content: center; gap: 1rem; }
+    .focus-control-btn {
+      width: 54px; height: 54px; border-radius: 50%; border: none; background: var(--accent); color: white;
+      font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: transform 0.15s ease;
+    }
+    .focus-control-btn:active { transform: scale(0.92); }
+    .focus-stop-btn { background: var(--bg-secondary); color: var(--accent-pink); }
     
     .theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-bottom: 1rem; }
     .theme-chip { padding: 0.6rem; border-radius: 12px; text-align: center; font-size: 0.75rem; font-weight: 700; cursor: pointer; border: 2px solid transparent; background: var(--bg-secondary); }
@@ -718,6 +740,60 @@
       </div>
     </div>
 
+    <!-- FOCUS TIMER VIEW -->
+    <div id="view-focus" class="app-view">
+      <div class="card" id="focus-setup-card">
+        <div class="card-header">
+          <span class="card-title">Focus Timer</span>
+        </div>
+        <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: -0.5rem; margin-bottom: 0.9rem;">Pick what you're focusing on, set your durations, and go. Completed sessions log themselves to your Day Timeline.</p>
+
+        <div class="timeline-row">
+          <div class="timeline-field" style="flex: 0 0 auto; width: 130px;">
+            <label>Category</label>
+            <select id="focus-category" class="form-select" onchange="toggleFocusCustomCategoryField()"></select>
+          </div>
+          <div class="timeline-field">
+            <label>Focus minutes</label>
+            <input type="number" id="focus-duration" class="form-input" value="25" min="1" max="180">
+          </div>
+        </div>
+        <div class="timeline-row" id="focus-custom-category-row" style="display: none;">
+          <div class="timeline-field">
+            <label>Name this category</label>
+            <input type="text" id="focus-custom-category" class="form-input" placeholder="e.g. Chores, Reading, Family time">
+          </div>
+        </div>
+        <div class="timeline-row">
+          <div class="timeline-field">
+            <label>Break minutes (0 to skip)</label>
+            <input type="number" id="focus-break-duration" class="form-input" value="5" min="0" max="60">
+          </div>
+        </div>
+        <button class="btn-primary" onclick="startFocusSession()">▶ Start Focus Session</button>
+      </div>
+
+      <div class="card" id="focus-timer-card" style="display: none; text-align: center;">
+        <div class="focus-phase-label" id="focus-phase-label">Focus Session</div>
+        <div class="focus-ring-wrap">
+          <svg viewBox="0 0 200 200" class="focus-ring-svg">
+            <circle cx="100" cy="100" r="88" class="focus-ring-track"></circle>
+            <circle cx="100" cy="100" r="88" class="focus-ring-progress" id="focus-ring-progress"></circle>
+          </svg>
+          <div class="focus-time-text" id="focus-time-text">25:00</div>
+        </div>
+        <div class="focus-controls">
+          <button class="focus-control-btn" id="focus-pause-btn" onclick="pauseResumeFocusTimer()"><i class="fa-solid fa-pause"></i></button>
+          <button class="focus-control-btn focus-stop-btn" onclick="stopFocusSession()"><i class="fa-solid fa-stop"></i></button>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="card-title" style="font-size: 0.85rem;">Today's Focus</span>
+        <div id="focus-stats-line" style="margin-top: 0.6rem; font-size: 0.85rem; color: var(--text-muted);">No focus sessions logged yet today.</div>
+      </div>
+    </div>
+
     <!-- 5. PROFILE & AVATAR VIEW -->
     <div id="view-profile" class="app-view">
       <div class="card">
@@ -800,6 +876,10 @@
     <button class="nav-btn" id="btn-nav-routine" onclick="switchTab('routine')">
       <i class="fa-solid fa-calendar-check"></i>
       <span>Routine</span>
+    </button>
+    <button class="nav-btn" id="btn-nav-focus" onclick="switchTab('focus')">
+      <i class="fa-solid fa-hourglass-half"></i>
+      <span>Focus</span>
     </button>
   </nav>
 
@@ -1172,20 +1252,19 @@
       updateUI();
     }
 
+    function getLogForDate(dateStr) {
+      if (!appData.logsByDate[dateStr]) {
+        appData.logsByDate[dateStr] = { completedHabits: [], expenses: [], todos: [], notes: '', timeline: [] };
+      }
+      const log = appData.logsByDate[dateStr];
+      if (!log.todos) log.todos = [];
+      if (log.notes === undefined) log.notes = '';
+      if (!log.timeline) log.timeline = [];
+      return log;
+    }
+
     function getSelectedDateLog() {
-      if (!appData.logsByDate[selectedDate]) {
-        appData.logsByDate[selectedDate] = { completedHabits: [], expenses: [], todos: [], notes: '', timeline: [] };
-      }
-      if (!appData.logsByDate[selectedDate].todos) {
-        appData.logsByDate[selectedDate].todos = [];
-      }
-      if (appData.logsByDate[selectedDate].notes === undefined) {
-        appData.logsByDate[selectedDate].notes = '';
-      }
-      if (!appData.logsByDate[selectedDate].timeline) {
-        appData.logsByDate[selectedDate].timeline = [];
-      }
-      return appData.logsByDate[selectedDate];
+      return getLogForDate(selectedDate);
     }
 
     // STREAK CALCULATOR WITH 1-MISS FORGIVENESS
@@ -1231,11 +1310,12 @@
       const navBtn = document.getElementById(`btn-nav-${tabId}`);
       if (navBtn) navBtn.classList.add('active');
 
-      // Date navigation is meaningless on the Profile/Settings screen — hide it there
-      document.getElementById('global-date-nav').style.display = (tabId === 'profile') ? 'none' : 'flex';
+      // Date navigation is meaningless on Profile/Settings and the live Focus timer — hide it there
+      document.getElementById('global-date-nav').style.display = (tabId === 'profile' || tabId === 'focus') ? 'none' : 'flex';
 
       if (tabId === 'finance') setTimeout(renderFinanceChart, 100);
       if (tabId === 'routine') renderWeeklyHeatmap();
+      if (tabId === 'focus') renderFocusTabState();
     }
 
     function switchRoutineSubTab(sub, el) {
@@ -1484,6 +1564,176 @@
           </div>
         `;
       }).join('') + `</div>`;
+    }
+
+    // FOCUS TIMER — customizable Pomodoro-style sessions, tagged with the same categories
+    // as Day Timeline. A completed focus phase auto-logs itself as a Timeline block.
+    let focusTimerState = 'idle'; // idle | focus | break | paused
+    let focusInterval = null;
+    let focusRemainingSeconds = 0;
+    let focusPhaseTotalSeconds = 0;
+    let focusSessionStartTime = null; // "HH:MM" clock time the current focus phase began
+    let focusChosenCategory = 'other';
+    let focusChosenCustomCategory = '';
+    let focusChosenDurationMin = 25;
+    let focusChosenBreakMin = 5;
+
+    const FOCUS_RING_CIRCUMFERENCE = 553; // 2 * π * 88, matches the SVG circle radius
+
+    function populateFocusCategorySelect() {
+      const select = document.getElementById('focus-category');
+      if (!select || select.options.length) return;
+      select.innerHTML = TIMELINE_CATEGORIES.map(c => `<option value="${c.id}">${c.emoji} ${c.name}</option>`).join('');
+    }
+
+    function toggleFocusCustomCategoryField() {
+      const isOther = document.getElementById('focus-category').value === 'other';
+      document.getElementById('focus-custom-category-row').style.display = isOther ? 'flex' : 'none';
+    }
+
+    function startFocusSession() {
+      focusChosenCategory = document.getElementById('focus-category').value || 'other';
+      focusChosenCustomCategory = focusChosenCategory === 'other' ? document.getElementById('focus-custom-category').value.trim() : '';
+      focusChosenDurationMin = parseInt(document.getElementById('focus-duration').value, 10) || 25;
+      focusChosenBreakMin = parseInt(document.getElementById('focus-break-duration').value, 10) || 0;
+
+      beginFocusPhase('focus', focusChosenDurationMin);
+    }
+
+    function beginFocusPhase(phase, minutes) {
+      focusTimerState = phase;
+      focusPhaseTotalSeconds = minutes * 60;
+      focusRemainingSeconds = focusPhaseTotalSeconds;
+
+      if (phase === 'focus') {
+        const now = new Date();
+        focusSessionStartTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+      }
+
+      document.getElementById('focus-setup-card').style.display = 'none';
+      document.getElementById('focus-timer-card').style.display = 'block';
+      document.getElementById('focus-phase-label').innerText = phase === 'focus' ? 'Focus Session' : 'Break';
+      document.getElementById('focus-pause-btn').innerHTML = '<i class="fa-solid fa-pause"></i>';
+
+      clearInterval(focusInterval);
+      tickFocusTimer();
+      focusInterval = setInterval(tickFocusTimer, 1000);
+    }
+
+    function tickFocusTimer() {
+      updateFocusDisplay();
+      if (focusRemainingSeconds <= 0) {
+        clearInterval(focusInterval);
+        onFocusPhaseComplete();
+        return;
+      }
+      focusRemainingSeconds--;
+    }
+
+    function updateFocusDisplay() {
+      const mins = Math.floor(focusRemainingSeconds / 60);
+      const secs = focusRemainingSeconds % 60;
+      document.getElementById('focus-time-text').innerText = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+
+      const progress = focusPhaseTotalSeconds > 0 ? (focusRemainingSeconds / focusPhaseTotalSeconds) : 0;
+      const offset = FOCUS_RING_CIRCUMFERENCE * (1 - progress);
+      document.getElementById('focus-ring-progress').style.strokeDashoffset = offset;
+    }
+
+    function onFocusPhaseComplete() {
+      playAudioTune('bell');
+      if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+
+      if (focusTimerState === 'focus') {
+        logCompletedFocusSession();
+        if (focusChosenBreakMin > 0) {
+          beginFocusPhase('break', focusChosenBreakMin);
+          return;
+        }
+      }
+
+      // Break finished, or focus finished with no break configured — return to setup
+      focusTimerState = 'idle';
+      document.getElementById('focus-setup-card').style.display = 'block';
+      document.getElementById('focus-timer-card').style.display = 'none';
+      renderFocusStats();
+    }
+
+    function logCompletedFocusSession() {
+      const now = new Date();
+      const endTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+      const cat = TIMELINE_CATEGORIES.find(c => c.id === focusChosenCategory) || TIMELINE_CATEGORIES[TIMELINE_CATEGORIES.length - 1];
+      const catName = focusChosenCustomCategory || cat.name;
+
+      const todayLog = getLogForDate(getSystemTodayString());
+      todayLog.timeline.push({
+        id: Date.now(),
+        start: focusSessionStartTime,
+        end: endTime,
+        category: focusChosenCategory,
+        customCategory: focusChosenCustomCategory || null,
+        label: `${cat.emoji} Focus: ${catName}`,
+        source: 'focus'
+      });
+      saveData();
+
+      if (selectedDate === getSystemTodayString()) renderTimelineList();
+    }
+
+    function pauseResumeFocusTimer() {
+      const btn = document.getElementById('focus-pause-btn');
+      if (focusInterval) {
+        clearInterval(focusInterval);
+        focusInterval = null;
+        btn.innerHTML = '<i class="fa-solid fa-play"></i>';
+      } else {
+        focusInterval = setInterval(tickFocusTimer, 1000);
+        btn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+      }
+    }
+
+    function stopFocusSession() {
+      clearInterval(focusInterval);
+      focusInterval = null;
+      focusTimerState = 'idle';
+      document.getElementById('focus-setup-card').style.display = 'block';
+      document.getElementById('focus-timer-card').style.display = 'none';
+    }
+
+    function renderFocusStats() {
+      const el = document.getElementById('focus-stats-line');
+      if (!el) return;
+      const todayLog = getLogForDate(getSystemTodayString());
+      const sessions = todayLog.timeline.filter(b => b.source === 'focus');
+
+      if (!sessions.length) {
+        el.innerText = 'No focus sessions logged yet today.';
+        return;
+      }
+
+      let totalMinutes = 0;
+      sessions.forEach(b => {
+        const [sh, sm] = b.start.split(':').map(Number);
+        const [eh, em] = b.end.split(':').map(Number);
+        totalMinutes += (eh * 60 + em) - (sh * 60 + sm);
+      });
+
+      el.innerText = `${sessions.length} session${sessions.length === 1 ? '' : 's'} • ${totalMinutes} min focused today`;
+    }
+
+    function renderFocusTabState() {
+      populateFocusCategorySelect();
+      renderFocusStats();
+      // Reflect whatever is actually running/paused right now, in case the user navigated away mid-session
+      if (focusTimerState === 'focus' || focusTimerState === 'break') {
+        document.getElementById('focus-setup-card').style.display = 'none';
+        document.getElementById('focus-timer-card').style.display = 'block';
+        document.getElementById('focus-phase-label').innerText = focusTimerState === 'focus' ? 'Focus Session' : 'Break';
+        updateFocusDisplay();
+      } else {
+        document.getElementById('focus-setup-card').style.display = 'block';
+        document.getElementById('focus-timer-card').style.display = 'none';
+      }
     }
 
     // TO-DO LIST — freeform, per-date, unlike the fixed daily Habits/Goals list
